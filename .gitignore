@@ -1,0 +1,7 @@
+data/
+tensorboard/
+__pycache__/
+log.txt
+*.npy
+*.png
+*.svg

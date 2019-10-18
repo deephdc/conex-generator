@@ -1,0 +1,39 @@
+RUNNR  1                               run number
+NSHOW  1                               number of showers to generate
+PRMPAR  14                             prim. particle (1=gamma, 14=proton, ...)
+ESLOPE  -1.0                           slope of primary energy spectrum
+ERANGE 7.3966e+10  7.3966e+10          energy range of primary particle (GeV)
+THETAP  0.  65.                        range of zenith angle (degree)
+PHIP    -180.  180.                    range of azimuth angle (degree)
+SEED   100012 0 0                      seed for 1. random number sequence
+SEED   640375 0 0                      seed for 2. random number sequence
+SEED   195768 0 0                      seed for 3. random number sequence (for CONEX : has to be changed for each run)
+SEED   640375 0 0                      seed for 4. random number sequence
+SEED   640375 0 0                      seed for 5. random number sequence
+SEED   640375 0 0                      seed for 6. random number sequence
+SEED   640375 0 0                      seed for 7. random number sequence
+OBSLEV  1.452E+05                      observation level (in cm)
+FIXHEI  0. 0                           starting altitude (g/cm**2)
+MAGNET  2.010E+01  -1.420E+01          magnetic field centr. Europe
+* HADFLG  0  0  0  0  0  2             flags hadr.interact.&fragmentation
+THIN  1.000000E-06 73966 10000
+ECUTS   1.000E-01 1.000E-01 2.500E-04 2.500E-04           energy cuts for particles
+CASCADE T T T
+MUADDI  T                              additional info for muons
+MUMULT  T                              muon multiple scattering angle
+ELMFLG  F   T                          em. interaction flags (NKG,EGS)
+STEPFC  1.0                            mult. scattering step length fact.
+RADNKG  5.0E+05                        outer radius for NKG lat.dens.distr.
+ARRANG  0.                             rotation of array to north
+LONGI   T  10.  F  T                   longit.distr. & step size & fit & out
+ECTMAP  2.5E+5                         cut on gamma factor for printout
+MAXPRT  1                              max. number of printed events
+DIRECT  ./                             output directory
+DATBAS  F                              write .dbase file
+USER    you                            user
+PAROUT F F
+* URQMD T 2
+DEBUG   F  6  F  1000000               debug flag and log.unit for out
+THINH  1.000E+00 1.000E+02             thinning THINH
+ATMOD  21                              atmospheric model WinterI(ATMOD=17),WinterII(18),Spring(19),Summer(20),Autumn(21)
+EXIT                                   terminates input
