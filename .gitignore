@@ -1,7 +1,6 @@
-./data/
+/data
+/models
+/reports
 tensorboard/
 __pycache__/
 log.txt
-*.npy
-*.png
-*.svg
