@@ -1,2 +1,2 @@
-from ._log import getLogger
+from .log import getLogger
 
