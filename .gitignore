@@ -1,6 +1,9 @@
 /data
 /models
 /reports
+
 tensorboard/
 __pycache__/
-log.txt
+/log.txt
+
+*.swp
