@@ -11,7 +11,7 @@ rawpath = get_path()
 from . import json_to_numpy
 
 
-def convert_run(run, expand_depth=True, overwrite=False):
+def convert_run(run, expand_depth, overwrite=False):
     runpath = os.path.join(rawpath, run)
 
     if not os.path.isdir(runpath):

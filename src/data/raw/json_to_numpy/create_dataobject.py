@@ -21,7 +21,7 @@ numpy_data_layout = config["numpy_data_layout"]
 numpy_label_layout = config["numpy_label_layout"]
 
 
-def create_dataobject(filename, run, expand_depth = True):
+def create_dataobject(filename, run, expand_depth):
     # read json data
     filepath = os.path.join(rawpath, run, filename)
     with open(filepath, "r") as fd:
