@@ -1,0 +1,42 @@
+{
+    "particle_label": {
+        "gamma":    0,
+        "electron": 1,
+        "proton":   2,
+        "helium":   3,
+        "oxygen":   4,
+        "iron":     5
+    },
+    
+    "numpy_data_layout": {
+        "particle_distribution": {
+            "gamma":    0,
+            "positron": 1,
+            "electron": 2,
+            "mup":      3,
+            "mum":      4,
+            "hadron":   5,
+            "charged":  6,
+            "nuclei":   7
+        },
+        "energy_deposit": {
+            "gamma":    0,
+            "em_ioniz": 1,
+            "em_cut":   2,
+            "mu_ioniz": 3,
+            "mu_cut":   4,
+            "ha_ioniz": 5,
+            "ha_cut":   6,
+            "neutrino": 7,
+            "sum":      8
+        }
+    },
+    
+    "numpy_label_layout": {
+        "particle": 0,
+        "energy":   1,
+        "theta":    2,
+        "phi":      3
+    }
+}
+
