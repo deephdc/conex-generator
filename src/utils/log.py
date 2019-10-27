@@ -1,8 +1,9 @@
 import logging
+import uuid
 
 logging.basicConfig(
         level = logging.WARNING,
-        format = "%(levelname)-1.1s/%(asctime)s/%(name)s: %(message)s",
+        format = f"%(levelname)-1.1s/%(asctime)s/{uuid.uuid4()}/%(name)s: %(message)s",
         handlers = [
             logging.FileHandler("log.txt"),
             logging.StreamHandler(),
