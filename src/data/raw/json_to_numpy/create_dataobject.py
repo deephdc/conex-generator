@@ -141,23 +141,27 @@ def create_dataobject(filename, run, expand_depth):
             "json_file": filename,
             "run": run,
             "expand_depth": expand_depth,
+            "length": numdata,
 
             "label": {
                 "data": label,
                 "layout": numpy_label_layout,
                 "particle": particle_label,
+                "number_of_features": label.shape[1],
                 },
 
             "particle_distribution": {
                 "depth": depth_pd.tolist(),
                 "data": data_pd,
                 "layout": numpy_data_layout["particle_distribution"],
+                "number_of_features": data_pd.shape[2],
                 },
 
             "energy_deposit": {
                 "depth": depth_ed.tolist(),
                 "data": data_ed,
                 "layout": numpy_data_layout["energy_deposit"],
+                "number_of_features": data_ed.shape[2],
                 },
             }
 
