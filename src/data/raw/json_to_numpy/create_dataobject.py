@@ -134,8 +134,16 @@ def create_dataobject(filename, run, expand_depth):
         for curkey, curindex in numpy_label_layout.items():
             if curkey == "particle":
                 label[ii, curindex] = particle_label[value["particle"]]
-            else:
-                label[ii, curindex] = value[curkey]
+                continue
+
+            if curkey == "obslevel":
+                try:
+                    label[ii, curindex] = value[curkey]
+                except:
+                    pass
+                continue
+
+            label[ii, curindex] = value[curkey]
 
     return {
             "json_file": filename,

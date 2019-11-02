@@ -36,7 +36,8 @@
         "particle": 0,
         "energy":   1,
         "theta":    2,
-        "phi":      3
+        "phi":      3,
+        "obslevel": 4
     }
 }
 
