@@ -61,9 +61,9 @@ def write_steering_file(
             seedstr = " ".join(seed)
             new_lines[ii] = "{:7} {:<50}\n".format("SEED", seedstr)
             continue
-
-         if "OBSLEV" in line:
-            new_lines[ii] = "{:7} {:<50}\n".format("ERANGE", "%.3e" % (obslevel))
+        
+        if "OBSLEV" in line:
+            new_lines[ii] = "{:7} {:<50}\n".format("OBSLEV", "%.3e" % (obslevel))
             continue
    
     with open(filepath, "w") as file:
@@ -74,6 +74,6 @@ def remove_steering_file(run):
     runpath = get_run_path()
     filepath = os.path.join(runpath, str(run) + "_conex.cfg")
 
-    if os.path.isfile(filepath)
+    if os.path.isfile(filepath):
         os.remove(filepath)
 
