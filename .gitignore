@@ -2,9 +2,10 @@
 /models
 /reports
 /test
+/test.py
+/log.txt
 
 tensorboard/
 __pycache__/
-/log.txt
 
 *.swp
