@@ -1,6 +1,8 @@
 import numpy as np
 import uuid
+import os
 import src.utils
+from . import get_run_path
 
 log = src.utils.getLogger(__name__)
 
@@ -120,4 +122,17 @@ def make_dataobject(particle, energy, theta, phi, obslevel,
     }
 
     return dataobject
+
+
+def get_long_filepath(run):
+    runpath = get_run_path()
+    filename = "DAT{0:06d}.long".format(run)
+    return os.path.join(runpath, filename)
+
+
+def remove_long_file(run):
+    filepath = get_long_filepath(run)
+
+    if os.path.isfile(filepath):
+        os.remove(filepath)
 
