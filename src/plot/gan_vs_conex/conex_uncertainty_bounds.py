@@ -2,12 +2,17 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import os
+import datetime
+
+timestamp = str(datetime.datetime.now()).replace(" ","-").replace(":","-")
+plotdir = os.path.join(".", "plots", timestamp)
+os.mkdir(plotdir)
 
 matplotlib.rcParams.update({"font.size": 20})
 #matplotlib.rcParams['text.usetex']=True
 #matplotlib.rcParams['text.latex.unicode']=True
 
-data_path = "/cr/users/koepke/src/tensorflow/base/conex-generator/data/gan/run01/02"
+data_path = "."
 
 gdata_path = os.path.join(data_path, "gdata.npy")
 label_path = os.path.join(data_path, "label.npy")
@@ -51,10 +56,10 @@ for ii in range(0,500,10):
     rdata_avg = np.mean(rdata[ii:ii+10], axis=0)
     rdata_std = np.std(rdata[ii:ii+10], axis=0)
 
-    inparticle = particle_list[int(labels[ii,0])]
-    energy = labels[ii,1] / 1.0e9
-    theta = labels[ii,2]
-    phi = labels[ii,3]
+    inparticle = particle_list[int(label[ii,0])]
+    energy = label[ii,1] / 1.0e9
+    theta = label[ii,2]
+    phi = label[ii,3]
 
     for jj in range(8):
         outparticle = data_list[jj]
@@ -109,9 +114,10 @@ for ii in range(0,500,10):
             plt.plot(avgdepth, temp, linewidth=5, label="GAN", color="C3")
 
             plt.legend()
-
-            plt.savefig(str(ii+kk) + "_" + \
-                        titlestring.replace(" ","").replace(",","_") + \
-                        "_" + outparticle + ".png")
+            
+            filename = str(ii+kk) + "_" + \
+                       titlestring.replace(" ","").replace(",","_") + \
+                       "_" + outparticle + ".png" 
+            plt.savefig(os.path.join(plotdir, filename))
             plt.close(fig)
 
