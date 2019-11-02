@@ -22,7 +22,7 @@ numthreads = int(sys.argv[2])
 try:
     showerperrun = int(sys.argv[3])
 except:
-    showerperrun = 10
+    showerperrun = 200
 try:
     startrun = int(sys.arg[4])
 except:
