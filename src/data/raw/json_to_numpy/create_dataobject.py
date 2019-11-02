@@ -140,7 +140,7 @@ def create_dataobject(filename, run, expand_depth):
                 try:
                     label[ii, curindex] = value[curkey]
                 except:
-                    pass
+                    label[ii, curindex] = np.nan
                 continue
 
             label[ii, curindex] = value[curkey]
