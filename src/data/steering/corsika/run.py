@@ -29,7 +29,7 @@ except:
     startrun = 0
 
 # physical parameters
-energy_range = [1e8, 1e10]
+energy_range = [17, 20]
 theta_range = [0.0, 65.0]
 phi_range = [-180.0, 180.0]
 particle_list = {
@@ -47,7 +47,7 @@ def worker_call(threadid, jobq : queue.Queue, dataq : queue.Queue, seedint):
     while True:
         run = jobq.get()
 
-        energy = random.uniform(*energy_range)
+        energy = (10**random.uniform(*energy_range)) / 1e9
         theta = random.uniform(*theta_range)
         phi = random.uniform(*phi_range)
         particle = random.choice(list(particle_list.keys()))

@@ -12,7 +12,7 @@ SEED   640375 0 0                      seed for 4. random number sequence
 SEED   640375 0 0                      seed for 5. random number sequence
 SEED   640375 0 0                      seed for 6. random number sequence
 SEED   640375 0 0                      seed for 7. random number sequence
-OBSLEV  1.452E+05                      observation level (in cm)
+OBSLEV  -1.0E5                         observation level (in cm)
 FIXHEI  0. 0                           starting altitude (g/cm**2)
 MAGNET  2.010E+01  -1.420E+01          magnetic field centr. Europe
 * HADFLG  0  0  0  0  0  2             flags hadr.interact.&fragmentation

@@ -1,6 +1,7 @@
 /data
 /models
 /reports
+/test
 
 tensorboard/
 __pycache__/
