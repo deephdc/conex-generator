@@ -12,7 +12,7 @@ with open(os.path.join(dir_path, "conex.default"), "r") as file:
 
 def write_steering_file(
         run = 1,
-        number = 1,
+        nshower = 1,
         particle = 14,
         energy = 1e0,
         theta = 0.0,
@@ -22,7 +22,6 @@ def write_steering_file(
     runpath = get_run_path()
     filepath = os.path.join(runpath, str(run) + "_conex.cfg")
     filename = os.path.split(filepath)[-1]
-
     if not overwrite and os.path.isfile(filepath):
         msg = "steering file " + filename + " does already exist"
         log.error(msg)
@@ -37,7 +36,7 @@ def write_steering_file(
             continue
 
         if "NSHOW" in line:
-            new_lines[ii] ="{:7} {:<50}\n".format("NSHOW", number)
+            new_lines[ii] ="{:7} {:<50}\n".format("NSHOW", nshower)
             continue
 
         if "PRMPAR" in line:
@@ -45,7 +44,7 @@ def write_steering_file(
             continue
 
         if "ERANGE" in line:
-            new_lines[ii] = "{:7} {:<50}\n".format("ERANGE", "%.3e %.3e" % (energy, energy))
+            new_lines[ii] = "{:7} {:<50}\n".format("ERANGE", "%.9e %.9e" % (energy, energy))
             continue
 
         if "THETAP" in line:
@@ -63,17 +62,24 @@ def write_steering_file(
             continue
         
         if "OBSLEV" in line:
-            new_lines[ii] = "{:7} {:<50}\n".format("OBSLEV", "%.3e" % (obslevel))
+            new_lines[ii] = "{:7} {:<50}\n".format("OBSLEV", "%.9e" % (obslevel))
             continue
-   
+
+    log.info(f"writing steering file {filename}")
     with open(filepath, "w") as file:
         file.writelines(new_lines)
+
+    return filepath
 
 
 def remove_steering_file(run):
     runpath = get_run_path()
-    filepath = os.path.join(runpath, str(run) + "_conex.cfg")
+    filename = str(run) + "_conex.cfg"
+    filepath = os.path.join(runpath, filename)
 
     if os.path.isfile(filepath):
+        log.info(f"removing steering file {filename}")
         os.remove(filepath)
+    else:
+        log.warning(f"cannot remove {filename} because it does not exist")
 

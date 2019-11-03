@@ -7,8 +7,10 @@ from . import get_run_path
 log = src.utils.getLogger(__name__)
 
 
-def read_long_file(datfilepath):
-    with open(datfilepath, "r") as file:
+def read_long_file(filepath):
+    filename = os.path.split(filepath)[-1]
+    log.info(f"reading long file {filename}")
+    with open(filepath, "r") as file:
         lines = file.readlines()
 
     particle_distribution_list = []
@@ -16,13 +18,13 @@ def read_long_file(datfilepath):
     curline = 0
     while curline < len(lines):
         if "DISTRIBUTION" not in lines[curline]:
-            error = "bad format in file " + datfilepath + \
+            error = "bad format in file " + filepath + \
                     " line " + str(curline)
             log.error(error)
             raise AssertionError(error)
         curline += 1
         if "DEPTH" not in lines[curline]:
-            error = "bad format in file " + datfilepath + \
+            error = "bad format in file " + filepath + \
                     " line " + str(curline)
             log.error(error)
             raise AssertionError(error)
@@ -35,7 +37,7 @@ def read_long_file(datfilepath):
 
             temp = [float(item) for item in filter(None, line.split(" "))]
             if len(temp) != 10:
-                error = "bad format in file " + datfilepath + \
+                error = "bad format in file " + filepath + \
                         " line " + str(curline)
                 log.error(error)
                 raise AssertionError(error)
@@ -45,13 +47,13 @@ def read_long_file(datfilepath):
         particle_distribution_list.append(particle_distribution)
 
         if "ENERGY" not in lines[curline]:
-            error = "bad format in file " + datfilepath + \
+            error = "bad format in file " + filepath + \
                     " line " + str(curline)
             log.error(error)
             raise AssertionError(error)
         curline += 1
         if "DEPTH" not in lines[curline]:
-            error = "bad format in file " + datfilepath + \
+            error = "bad format in file " + filepath + \
                     " line " + str(curline)
             log.error("error")
             raise AssertionError(error)
@@ -63,7 +65,7 @@ def read_long_file(datfilepath):
             line = lines[curline]
             temp = [float(item) for item in filter(None, line.split(" "))]
             if len(temp) != 10:
-                error = "bad format in file " + datfilepath + \
+                error = "bad format in file " + filepath + \
                         " line " + str(curline)
                 log.error(error)
                 raise AssertionError(error)
@@ -71,7 +73,9 @@ def read_long_file(datfilepath):
             curline += 1
         energy_deposit_list.append(energy_deposit)
 
-    return (particle_distribution_list, energy_deposit_list)
+    pd_list = np.transpose(particle_distribution_list, (0,2,1))
+    ed_list = np.transpose(energy_deposit_list, (0,2,1))
+    return (pd_list, ed_list)
 
 
 def make_dataobject(particle, energy, theta, phi, obslevel,
@@ -82,10 +86,8 @@ def make_dataobject(particle, energy, theta, phi, obslevel,
         log.error(msg)
         raise AssertionError(msg)
 
-    pd_list = np.transpose(particle_distribution_list, (0,2,1))
-    ed_list = np.transpose(energy_deposit_list, (0,2,1))
-
     # make dataobject
+    log.info("creating data object")
     dataobject = {
             str(uuid.uuid4()): {
                 "particle": particle,
@@ -94,31 +96,31 @@ def make_dataobject(particle, energy, theta, phi, obslevel,
                 "phi": phi,
                 "obslevel": obslevel,
                 "particle_distribution": {
-                    "depth":     pd_list[ii,0].tolist(),
-                    "gamma":     pd_list[ii,1].tolist(),
-                    "positron":  pd_list[ii,2].tolist(),
-                    "electron":  pd_list[ii,3].tolist(),
-                    "mup":       pd_list[ii,4].tolist(),
-                    "mum":       pd_list[ii,5].tolist(),
-                    "hadron":    pd_list[ii,6].tolist(),
-                    "charged":   pd_list[ii,7].tolist(),
-                    "nuclei":    pd_list[ii,8].tolist(),
-                    "cherenkov": pd_list[ii,9].tolist(),
+                    "depth":     particle_distribution_list[ii,0].tolist(),
+                    "gamma":     particle_distribution_list[ii,1].tolist(),
+                    "positron":  particle_distribution_list[ii,2].tolist(),
+                    "electron":  particle_distribution_list[ii,3].tolist(),
+                    "mup":       particle_distribution_list[ii,4].tolist(),
+                    "mum":       particle_distribution_list[ii,5].tolist(),
+                    "hadron":    particle_distribution_list[ii,6].tolist(),
+                    "charged":   particle_distribution_list[ii,7].tolist(),
+                    "nuclei":    particle_distribution_list[ii,8].tolist(),
+                    "cherenkov": particle_distribution_list[ii,9].tolist(),
                 },
                 "energy_deposit": {
-                    "depth":     ed_list[ii,0].tolist(),
-                    "gamma":     ed_list[ii,1].tolist(),
-                    "em_ioniz":  ed_list[ii,2].tolist(),
-                    "em_cut":    ed_list[ii,3].tolist(),
-                    "mu_ioniz":  ed_list[ii,4].tolist(),
-                    "mu_cut":    ed_list[ii,5].tolist(),
-                    "ha_ioniz":  ed_list[ii,6].tolist(),
-                    "ha_cut":    ed_list[ii,7].tolist(),
-                    "neutrino":  ed_list[ii,8].tolist(),
-                    "sum":       ed_list[ii,9].tolist(),
+                    "depth":     energy_deposit_list[ii,0].tolist(),
+                    "gamma":     energy_deposit_list[ii,1].tolist(),
+                    "em_ioniz":  energy_deposit_list[ii,2].tolist(),
+                    "em_cut":    energy_deposit_list[ii,3].tolist(),
+                    "mu_ioniz":  energy_deposit_list[ii,4].tolist(),
+                    "mu_cut":    energy_deposit_list[ii,5].tolist(),
+                    "ha_ioniz":  energy_deposit_list[ii,6].tolist(),
+                    "ha_cut":    energy_deposit_list[ii,7].tolist(),
+                    "neutrino":  energy_deposit_list[ii,8].tolist(),
+                    "sum":       energy_deposit_list[ii,9].tolist(),
                 },
             }
-            for ii in range(len(pd_list))
+            for ii in range(len(particle_distribution_list))
     }
 
     return dataobject
@@ -132,7 +134,11 @@ def get_long_filepath(run):
 
 def remove_long_file(run):
     filepath = get_long_filepath(run)
+    filename = os.path.split(filepath)[-1]
 
     if os.path.isfile(filepath):
+        log.info(f"removing steering file {filename}")
         os.remove(filepath)
+    else:
+        log.warning(f"cannot remove {filename} because it does not exist")
 
