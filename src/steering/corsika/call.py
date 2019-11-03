@@ -20,7 +20,8 @@ def call(
         phi,
         obslevel = 0.0,
         nshower = 1,
-        run = None):
+        run = None,
+        clean = False):
 
     runpath = get_run_path()
     coriska_path = get_corsika_path()
@@ -53,8 +54,10 @@ def call(
         raise RuntimeError(msg)
 
     pd_list, ed_list = read_long_file(long_filepath)
-    remove_long_file(run)
-    remove_steering_file(run)
+
+    if clean:
+        remove_long_file(run)
+        remove_steering_file(run)
 
     return (pd_list, ed_list)
 
@@ -66,7 +69,8 @@ def get_data(
         phi,
         obslevel = 0.0,
         nshower = 1,
-        run = None):
+        run = None,
+        clean = False):
 
     pd_list, ed_list = call(particle,
                             energy,
@@ -74,7 +78,8 @@ def get_data(
                             phi,
                             obslevel,
                             nshower,
-                            run)
+                            run,
+                            clean)
 
     dataobject = make_dataobject(particle,
                                  energy,
