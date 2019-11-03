@@ -6,11 +6,14 @@ import src.utils
 from . import get_run_path, get_corsika_path, get_long_filepath
 from . import write_steering_file
 from . import read_long_file
+from . import get_particle_list
 from .long_file import make_dataobject
 from .steering_file import remove_steering_file
 from .long_file import remove_long_file
 
 log = src.utils.getLogger(__name__)
+
+particle_list = get_particle_list()
 
 
 def call(
@@ -36,8 +39,9 @@ def call(
         raise FileExistsError(msg)
 
     steering_filepath = write_steering_file(
-            particle=particle, energy=energy, theta=theta, phi=phi,
-            obslevel=obslevel, nshower=nshower, run=run, overwrite=False)
+            particle=particle_list[particle], energy=energy, theta=theta,
+            phi=phi, obslevel=obslevel, nshower=nshower, run=run,
+            overwrite=False)
 
     log.info(f"running {coriska_file} at {runpath} with run number {run}")
     shellcmd = os.path.join(".", coriska_file)

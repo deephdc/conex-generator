@@ -1,0 +1,10 @@
+{
+    "particle_list": {
+        "gamma": 1,
+        "electron": 3,
+        "proton": 14,
+        "helium": 402,
+        "oxygen": 1608,
+        "iron": 5626
+    }
+}
