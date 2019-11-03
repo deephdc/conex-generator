@@ -257,6 +257,7 @@ def distributed_worker(jobqueue : queue.Queue, dataqueue : queue.Queue):
             dataobject = get_data(**kwargs)
             dataqueue.put(dataobject, timeout=10)
         except KeyboardInterrupt:
+            log.debug("thread accepted KeyboardInterrupt")
             return
         except:
             if not retry:
