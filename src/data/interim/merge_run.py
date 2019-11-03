@@ -98,7 +98,8 @@ def merge_data(metadata, feature, depthlen, runpath):
         timestamp = jsonfile.split("_")[-1].split(".json")[0]
         filepath = os.path.join(runpath, feature + "_" + timestamp + ".npy")
         temp = np.load(filepath)
-        data[curindex:curindex+len(temp),0:depthlen,:] = temp[:,0:depthlen,:]
+        curlen = np.min([depthlen, temp.shape[1]])
+        data[curindex:curindex+len(temp),0:curlen,:] = temp[:,0:curlen,:]
         curindex += len(temp)
 
     return data
