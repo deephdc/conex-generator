@@ -52,7 +52,7 @@ def write_steering_file(
             continue
 
         if "PHIP" in line:
-            new_lines[ii] = "{:7} {:<50}\n".format("PHIP", "%f %f" % (theta, theta))
+            new_lines[ii] = "{:7} {:<50}\n".format("PHIP", "%f %f" % (phi, phi))
             continue
 
         if "SEED" in line:
