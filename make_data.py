@@ -1,8 +1,26 @@
-import sys
+import argparse
 
-numruns = int(sys.argv[1])
-showerperrun = int(sys.argv[2])
-numthreads = int(sys.argv[3])
+parser = argparse.ArgumentParser()
+parser.add_argument(
+        "nruns",
+        type=int,
+        help="number of corsika runs"
+        )
+parser.add_argument(
+        "nshower",
+        type=int,
+        help="number of showers per corsika run"
+        )
+parser.add_argument(
+        "nthreads",
+        type=int,
+        help="number of threads used"
+        )
+args = parser.parse_args()
+
+numruns = args.nruns
+showerperrun = args.nshower
+numthreads = args.nthreads
 
 import src
 import random
