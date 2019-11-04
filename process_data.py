@@ -22,5 +22,5 @@ import src
 
 src.data.clear_run(run)
 src.data.raw.convert_run(run, expand_depth=expand_depth)
-rc.data.interim.merge_run(run, expand_depth=expand_depth)
+src.data.interim.merge_run(run, expand_depth=expand_depth)
 
