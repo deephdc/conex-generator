@@ -6,7 +6,8 @@ import queue
 import traceback
 import src.utils
 
-from . import get_run_path, get_corsika_path, get_long_filepath
+from . import get_run_path, get_corsika_path
+from . import get_long_filepath, get_steering_filepath
 from . import write_steering_file
 from . import read_long_file
 from .config import get_particle_list
@@ -41,13 +42,14 @@ def call(
         log.error(msg)
         raise FileExistsError(msg)
 
-    steering_filepath = write_steering_file(
+    write_steering_file(
             particle=particle_list[particle], energy=energy, theta=theta,
             phi=phi, obslevel=obslevel, nshower=nshower, run=run,
             overwrite=False)
 
     log.info(f"running {coriska_file} at {runpath} with run number {run}")
     shellcmd = os.path.join(".", coriska_file)
+    steering_filepath = get_steering_filepath(run)
     with open(steering_filepath, "r") as infile:
         retval = subprocess.call(
                 [shellcmd],
@@ -234,37 +236,42 @@ def find_run(run):
 def distributed_worker(jobqueue : queue.Queue, dataqueue : queue.Queue):
     while True:
         try:
-            kwargs = jobqueue.get(timeout=10)
+            kwargs = dict(jobqueue.get(timeout=10))
         except queue.Empty:
             log.debug("no more jobs. stopping thread")
             return
-        
-        # remove temporary config
-        currun = kwargs["run"]
-        runpath = get_run_path()
-        filepath = os.path.join(runpath, str(currun) + "_conex.cfg")
-        retry = False
-        if os.path.isfile(filepath):
-            os.remove(filepath)
-        else:
-            log.warning(f"run number {currun} is retry")
-            long_filepath = get_long_filepath(currun)
-            if os.path.isfile(long_filepath):
-                os.remove(long_filepath)
-            retry = True
 
+        currun = kwargs["run"]
+        retry = kwargs.pop("retry", False)
+        
         try:
+            # remove temporary config
+            filepath = get_steering_filepath(currun)
+            if os.path.isfile(filepath):
+                os.remove(filepath)
+
+            # run corsika/conex
             dataobject = get_data(**kwargs)
             dataqueue.put(dataobject, timeout=10)
+            log.info(f"run number {currun} successfully finished")
         except KeyboardInterrupt:
             log.debug("thread accepted KeyboardInterrupt")
             return
         except:
+            traceback.print_exc()
+
+            # remove long file
+            filepath = get_long_filepath(currun)
+            if os.path.isfile(filepath):
+                os.remove(filepath)
+
+            # start retry if not already
             if not retry:
+                log.warning(f"run number {currun} failed. retry queued")
+                kwargs["retry"] = True
                 jobqueue.put(kwargs, timeout=10)
             else:
                 log.warning(f"retry of run number {currun} failed")
-                traceback.print_exc()
-
-        jobqueue.task_done()
+        finally:
+            jobqueue.task_done()
 

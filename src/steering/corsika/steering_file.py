@@ -20,7 +20,7 @@ def write_steering_file(
         obslevel = 0.0,
         overwrite=False):
     runpath = get_run_path()
-    filepath = os.path.join(runpath, str(run) + "_conex.cfg")
+    filepath = get_steering_filepath(run)
     filename = os.path.split(filepath)[-1]
     if not overwrite and os.path.isfile(filepath):
         msg = "steering file " + filename + " does already exist"
@@ -69,17 +69,21 @@ def write_steering_file(
     with open(filepath, "w") as file:
         file.writelines(new_lines)
 
-    return filepath
-
 
 def remove_steering_file(run):
     runpath = get_run_path()
-    filename = str(run) + "_conex.cfg"
-    filepath = os.path.join(runpath, filename)
+    filepath = get_steering_filepath(run)
+    filename = os.path.split(filepath)[-1]
 
     if os.path.isfile(filepath):
         log.info(f"removing steering file {filename}")
         os.remove(filepath)
     else:
         log.warning(f"cannot remove {filename} because it does not exist")
+
+
+def get_steering_filepath(run):
+    runpath = get_run_path()
+    filepath = os.path.join(runpath, str(run) + "_conex.cfg")
+    return filepath
 
