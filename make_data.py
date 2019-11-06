@@ -16,11 +16,17 @@ parser.add_argument(
         type=int,
         help="number of threads used"
         )
+parser.add_argument(
+        "store",
+        type=str,
+        help="raw folder at which data will be stored"
+        )
 args = parser.parse_args()
 
 numruns = args.nruns
 showerperrun = args.nshower
 numthreads = args.nthreads
+rawfolder = args.store
 
 import src
 import random
@@ -77,5 +83,5 @@ alldata = src.steering.corsika.get_data_distributed(
         nthreads = numthreads)
 
 # store data
-src.data.raw.store_data(alldata, "run03")
+src.data.raw.store_data(alldata, rawfolder)
 
