@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 import os
 import matplotlib
 import matplotlib.pyplot as plt
@@ -47,18 +48,29 @@ channel = [0,1,2,3,4,5,6]
 depth = np.arange(rdata.shape[1])*10.0 + 10.0
 
 # calculate distributions
+np.seterr(all="raise")
+sp.special.seterr(all="raise")
 gparam = np.zeros((numdata, len(channel), 4))
 rparam = np.zeros((numdata, len(channel), 4))
+
+gerr = 0
+rerr = 0
 for ii in range(numdata):
     for jj in range(len(channel)):
-        gparam[ii,jj,:] = src.analysis.xmax.gaisser_hillas_fit(depth, gdata[ii,:,jj])
-        rparam[ii,jj,:] = src.analysis.xmax.gaisser_hillas_fit(depth, rdata[ii,:,jj])
+        try:
+            gparam[ii,jj,:] = src.analysis.xmax.gaisser_hillas_fit(depth, gdata[ii,:,jj])
+        except:
+            gparam[ii,jj,:] = np.nan
+            gerr += 1
+        try:
+            rparam[ii,jj,:] = src.analysis.xmax.gaisser_hillas_fit(depth, rdata[ii,:,jj])
+        except:
+            rparam[ii,jj,:] = np.nan
+            rerr += 1
+print("gerr", gerr, "rerr", rerr)
 
 gxmax = gparam[:,:,1]
 rxmax = rparam[:,:,1]
-
-print(np.min(gxmax))
-print(np.min(rxmax))
 
 # plots
 os.mkdir(plot_path)
