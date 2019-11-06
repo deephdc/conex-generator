@@ -1,11 +1,16 @@
 import logging
 import uuid
+import os
+
+from . import get_root_path
+root_path = get_root_path()
+log_path = os.path.join(root_path, "log.txt")
 
 logging.basicConfig(
         level = logging.WARNING,
         format = f"%(levelname)-1.1s/%(asctime)s/{uuid.uuid4()}/%(name)s: %(message)s",
         handlers = [
-            logging.FileHandler("log.txt"),
+            logging.FileHandler(log_path),
             logging.StreamHandler(),
             ]
         )
