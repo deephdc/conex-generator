@@ -56,7 +56,7 @@ gdata = np.abs(gdata) + 0.01
 rdata = np.abs(rdata) + 0.01
 
 numdata = rdata.shape[0]
-channel = [0,1,2,3,4,5,6]
+channel = list(range(7))
 depth = np.arange(rdata.shape[1])*10.0 + 10.0
 
 # calculate distributions
