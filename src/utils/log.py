@@ -17,7 +17,7 @@ logging.basicConfig(
 
 def getLogger(name = None, level = None):
     if level is not None:
-        setLevel(level)
+        setLogLevel(level)
 
     if name is None:
         return logging.getLogger()
@@ -25,7 +25,7 @@ def getLogger(name = None, level = None):
     return logging.getLogger(name)
 
 
-def setLevel(level : str):
+def setLogLevel(level : str):
     level = level.lower()
     logger = logging.getLogger()
 
