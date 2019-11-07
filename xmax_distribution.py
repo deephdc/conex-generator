@@ -53,21 +53,21 @@ sp.special.seterr(all="raise")
 gparam = np.zeros((numdata, len(channel), 4))
 rparam = np.zeros((numdata, len(channel), 4))
 
-gerr = 0
-rerr = 0
+gind = []
+rind = []
 for ii in range(numdata):
     for jj in range(len(channel)):
         try:
-            gparam[ii,jj,:] = src.analysis.xmax.gaisser_hillas_fit(depth, gdata[ii,:,jj])
+            gparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, gdata[ii,:,jj])
         except:
             gparam[ii,jj,:] = np.nan
-            gerr += 1
+            gind.append((ii,jj))
         try:
-            rparam[ii,jj,:] = src.analysis.xmax.gaisser_hillas_fit(depth, rdata[ii,:,jj])
+            rparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, rdata[ii,:,jj])
         except:
             rparam[ii,jj,:] = np.nan
-            rerr += 1
-print("gerr", gerr, "rerr", rerr)
+            rind.append((ii,jj))
+print("gind", gind, "rind", rind)
 
 gxmax = gparam[:,:,1]
 rxmax = rparam[:,:,1]
@@ -75,7 +75,7 @@ rxmax = rparam[:,:,1]
 # plots
 os.mkdir(plot_path)
 
-bins = np.linspace(600,1200,21)
+bins = np.linspace(600,1200,16)
 
 for jj in range(len(channel)):
     filename = "gxmax_" + str(jj) + ".png"
