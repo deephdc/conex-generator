@@ -78,7 +78,7 @@ def fit_xmax_lam(dep, dat, nmax, xmax, x0, lam):
     pars = [xmax, lam]
     f1 = lambda x,p2,p4: gaisser_hillas_log_fithelper(x,nmax,p2,x0,p4)
     f2 = lambda x,p2,p4:     gaisser_hillas_fithelper(x,nmax,p2,x0,p4)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     xmax, lam = pars
     
