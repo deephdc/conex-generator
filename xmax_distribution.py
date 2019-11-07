@@ -1,15 +1,27 @@
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+        "path",
+        type=str,
+        help="model data path relative to the project root directory"
+        )
+args = parser.parse_args()
+model_base = args.path
+
+
 import numpy as np
 import scipy as sp
 import os
-import matplotlib
-import matplotlib.pyplot as plt
+import json
 
 import src
 
-model_base = "models/gan/run01/02"
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
-plot_path = os.path.join(model_path, "plots", src.utils.timestamp())
+gaisser_hillas_path = os.path.join(model_path, "gaisser_hillas")
+if not os.path.isdir(gaisser_hillas_path):
+    os.mkdir(gaisser_hillas_path)
 
 gdata = np.load(os.path.join(model_path, "gdata.npy"))
 rdata = np.load(os.path.join(model_path, "rdata.npy"))
@@ -67,26 +79,28 @@ for ii in range(numdata):
         except:
             rparam[ii,jj,:] = np.nan
             rind.append((ii,jj))
-print("gind", gind, "rind", rind)
+if len(gind) != 0 or len(rind) != 0:
+    print("fit error at index:")
+    print("gind = ", gind)
+    print("rind = ", rind)
 
-gxmax = gparam[:,:,1]
-rxmax = rparam[:,:,1]
 
-# plots
-os.mkdir(plot_path)
-
-bins = np.linspace(600,1200,16)
-
-for jj in range(len(channel)):
-    filename = "gxmax_" + str(jj) + ".png"
-    fig = plt.figure()
-    plt.hist(gxmax[:,jj], bins=bins)
-    plt.savefig(os.path.join(plot_path, filename))
-    plt.close(fig)
-
-    filename = "rxmax_" + str(jj) + ".png"
-    fig = plt.figure()
-    plt.hist(rxmax[:,jj], bins=bins)
-    plt.savefig(os.path.join(plot_path, filename))
-    plt.close(fig)
+np.save(os.path.join(gaisser_hillas_path, "gdata_cond.npy"), gdata, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "rdata_cond.npy"), rdata, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "label_cond.npy"), label, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "gfitparam.npy"), gparam, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "rfitparam.npy"), rparam, fix_imports=False)
+with open(os.path.join(gaisser_hillas_path, "fitparam_metadata.json"), "w") as fp:
+    json.dump(
+        {
+            "fitparam_layout": {
+                "nmax": 0,
+                "xmax": 1,
+                "x0": 2,
+                "lam": 3,
+                }
+        },
+        fp,
+        indent = 4
+    )
 
