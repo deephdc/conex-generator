@@ -6,8 +6,14 @@ parser.add_argument(
         type=str,
         help="model data path relative to the project root directory"
         )
+parser.add_argument(
+        "ecut",
+        type=float,
+        help="energy cut in GeV"
+        )
 args = parser.parse_args()
 model_base = args.path
+ecut = args.ecut
 
 
 import numpy as np
@@ -30,7 +36,7 @@ label = np.load(os.path.join(model_path, "label.npy"))
 # prepare data
 condition1 = label[:,0] >= 2
 print("condition1: ", np.sum(condition1))
-condition2 = label[:,1] >= 5e9
+condition2 = label[:,1] >= ecut
 print("condition2: ", np.sum(condition2))
 condition3 = label[:,2] >= 35
 print("condition3: ", np.sum(condition3))
