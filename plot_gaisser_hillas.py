@@ -1,3 +1,20 @@
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+        "path",
+        type=str,
+        help="model data path relative to the project root directory"
+        )
+parser.add_argument(
+        "bins",
+        type=int,
+        help="number of bins for combined histograms"
+        )
+args = parser.parse_args()
+model_base = args.path
+binnum = args.bins
+
 import numpy as np
 import json
 import os
@@ -8,8 +25,6 @@ import matplotlib.pyplot as plt
 matplotlib.rcParams.update({"font.size": 20})
 
 import src
-
-model_base = "models/gan/run01/02"
 
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
@@ -182,7 +197,7 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
 
 
 # all label
-plot_distributions(gparam, rparam, 30, "all")
+plot_distributions(gparam, rparam, binnum, "all")
 
 allprimaries = set(label[:,0].tolist())
 for primary in allprimaries:
@@ -190,5 +205,5 @@ for primary in allprimaries:
     tgparam = gparam[index,:,:]
     trparam = rparam[index,:,:]
     primary_name = primary_index_to_name[int(primary)]
-    plot_distributions(tgparam, trparam, int(30/len(allprimaries))+1, primary_name)
+    plot_distributions(tgparam, trparam, int(binnum/len(allprimaries))+1, primary_name)
 
