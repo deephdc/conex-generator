@@ -96,8 +96,7 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
                 color=color1,
                 alpha=0.9,
                 edgecolor="black",
-                linewidth=2.0,
-                density=True)
+                linewidth=2.0)
 
         plt.hist(
                 glist,
@@ -107,7 +106,6 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
                 alpha=0.8,
                 edgecolor="black",
                 linewidth=2.0,
-                density=True,
                 rwidth=0.65)
 
         plt.legend()
