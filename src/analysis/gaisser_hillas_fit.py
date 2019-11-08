@@ -6,8 +6,8 @@ import scipy.optimize as opt
 def transform_param(p1, p2, p3, p4):
     nmax = np.abs(p1)
     xmax = np.abs(p2)
-    x0 = -1000.0/2.0*(np.tanh((p3-0.0)/1000.0)+1.0) - 10.1
-    lam = 200.0/2.0*(np.tanh((p4-500.0)/1000.0)+1.0) + 0.1
+    x0 = -200.0/2.0*(np.tanh((p3 -    0.0)/1000.0)+1.0) - 10.1
+    lam = 500.0/2.0*(np.tanh((p4 - 1000.0)/1000.0)+1.0) +  1.0
     
     return (nmax, xmax, x0, lam)
 
@@ -124,6 +124,7 @@ def gaisser_hillas_fit(depth, data):
     x0 = 0.0
     lam = 0.0
     
+    nmax, xmax, x0, lam = fit_lam(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_x0(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_lam(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_xmax(dep, dat, nmax, xmax, x0, lam)
