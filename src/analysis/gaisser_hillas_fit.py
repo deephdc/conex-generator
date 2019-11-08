@@ -5,14 +5,14 @@ import scipy.optimize as opt
 
 # bounds
 bound_x0_upper = 200.0
-bound_x0_lower = -200.0
+bound_x0_lower = -1000.0
 scale_x0 = 1000.0
-zero_x0 = -100.0
+zero_x0 = -130.0
 
 bound_lam_upper = 1000.0
 bound_lam_lower = 1.0
 scale_lam = 1000.0
-zero_lam = 50.0
+zero_lam = 120.0
 
 # preprocessing
 range_x0 = bound_x0_upper - bound_x0_lower
@@ -32,11 +32,13 @@ def transform_param(p1, p2, p3, p4):
 
     return (nmax, xmax, x0, lam)
 
+def transform_param_inv(nxmax, xmax, x0, lam):
+    p1 = np.abs(nmax)
+    p2 = np.abs(xmax)
+    p3 = np.arctanh((x0  + shift_x0) *2.0/range_x0  - 1.0)*scale_x0  - inverse_x0
+    p4 = np.arctanh((lam + shift_lam)*2.0/range_lam - 1.0)*scale_lam - inverse_lam
 
-def gaisser_hillas_log(x, nmax, xmax, x0, lam):
-    return np.log(nmax) \
-           + ((xmax-x0)/lam) * np.log((x-x0)/(xmax-x0)) \
-           + ((xmax-x)/lam)
+    return (p1, p2, p3, p4)
 
 
 def gaisser_hillas(x, nmax, xmax, x0, lam):
@@ -44,15 +46,19 @@ def gaisser_hillas(x, nmax, xmax, x0, lam):
            * np.power((x-x0)/(xmax-x0), (xmax-x0)/lam) \
            * np.exp((xmax-x)/lam)
 
-
-def gaisser_hillas_log_fithelper(x, p1, p2, p3, p4):
-    nmax, xmax, x0, lam = transform_param(p1,p2,p3,p4)
-    return gaisser_hillas_log(x, nmax, xmax, x0, lam)
+def gaisser_hillas_log(x, nmax, xmax, x0, lam):
+    return np.log(nmax) \
+           + ((xmax-x0)/lam) * np.log((x-x0)/(xmax-x0)) \
+           + ((xmax-x)/lam)
 
 
 def gaisser_hillas_fithelper(x, p1, p2, p3, p4):
     nmax, xmax, x0, lam = transform_param(p1,p2,p3,p4)
     return gaisser_hillas(x, nmax, xmax, x0, lam)
+
+def gaisser_hillas_log_fithelper(x, p1, p2, p3, p4):
+    nmax, xmax, x0, lam = transform_param(p1,p2,p3,p4)
+    return gaisser_hillas_log(x, nmax, xmax, x0, lam)
 
 
 def fit_x0(dep, dat, nmax, xmax, x0, lam):
