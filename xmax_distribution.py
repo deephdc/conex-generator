@@ -74,13 +74,14 @@ for ii in range(numdata):
         except:
             gparam[ii,jj,:] = np.nan
             gind.append((ii,jj))
-            print((ii,jj))
+            print("gparam fit error at: ", (ii,jj))
         try:
             rparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, rdata[ii,:,jj])
         except:
             rparam[ii,jj,:] = np.nan
             rind.append((ii,jj))
-            print((ii,jj))
+            print("rparam fit error at: ", (ii,jj))
+
 if len(gind) != 0 or len(rind) != 0:
     print("fit error at index:")
     print("gind = ", gind)
