@@ -16,7 +16,7 @@ model_path = os.path.join(root_path, model_base)
 gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
 
 plot_path = os.path.join(model_path, "plots", src.utils.timestamp())
-os.mkdir(plot_path)
+os.makedirs(plot_path)
 
 def pretty_name(string : str):
     string = string.replace("mup", "muon+")
@@ -96,7 +96,8 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
                 color=color1,
                 alpha=0.9,
                 edgecolor="black",
-                linewidth=2.0)
+                linewidth=2.0,
+                density=True)
 
         plt.hist(
                 glist,
@@ -106,6 +107,7 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
                 alpha=0.8,
                 edgecolor="black",
                 linewidth=2.0,
+                density=True,
                 rwidth=0.65)
 
         plt.legend()
@@ -182,7 +184,7 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
 
 
 # all label
-plot_distributions(gparam, rparam, 50, "all")
+plot_distributions(gparam, rparam, 30, "all")
 
 allprimaries = set(label[:,0].tolist())
 for primary in allprimaries:
@@ -190,5 +192,5 @@ for primary in allprimaries:
     tgparam = gparam[index,:,:]
     trparam = rparam[index,:,:]
     primary_name = primary_index_to_name[int(primary)]
-    plot_distributions(tgparam, trparam, int(50/len(allprimaries))+1, primary_name)
+    plot_distributions(tgparam, trparam, int(30/len(allprimaries))+1, primary_name)
 
