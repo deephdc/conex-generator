@@ -130,7 +130,7 @@ def fit_nmax_xmax_x0_lam(dep, dat, nmax, xmax, x0, lam):
 
 
 def gaisser_hillas_fit(depth, data):
-    ind = np.where(depth >= bound_x0)[0]
+    ind = np.where(depth > bound_x0)[0]
     dep = depth[ind]
     dat = data[ind]
 
