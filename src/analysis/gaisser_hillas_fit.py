@@ -59,7 +59,7 @@ def fit_x0(dep, dat, nmax, xmax, x0, lam):
     pars = [x0]
     f1 = lambda x,p3: gaisser_hillas_log_fithelper(x,nmax,xmax,p3,lam)
     f2 = lambda x,p3:     gaisser_hillas_fithelper(x,nmax,xmax,p3,lam)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     x0 = pars[0]
     
@@ -69,7 +69,7 @@ def fit_lam(dep, dat, nmax, xmax, x0, lam):
     pars = [lam]
     f1 = lambda x,p4: gaisser_hillas_log_fithelper(x,nmax,xmax,x0,p4)
     f2 = lambda x,p4:     gaisser_hillas_fithelper(x,nmax,xmax,x0,p4)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     lam = pars[0]
     
@@ -79,7 +79,7 @@ def fit_xmax(dep, dat, nmax, xmax, x0, lam):
     pars = [xmax]
     f1 = lambda x,p2: gaisser_hillas_log_fithelper(x,nmax,p2,x0,lam)
     f2 = lambda x,p2:     gaisser_hillas_fithelper(x,nmax,p2,x0,lam)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     xmax = pars[0]
     
@@ -89,7 +89,7 @@ def fit_x0_lam(dep, dat, nmax, xmax, x0, lam):
     pars = [x0, lam]
     f1 = lambda x,p3,p4: gaisser_hillas_log_fithelper(x,nmax,xmax,p3,p4)
     f2 = lambda x,p3,p4:     gaisser_hillas_fithelper(x,nmax,xmax,p3,p4)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     x0, lam = pars
     
@@ -99,7 +99,7 @@ def fit_xmax_lam(dep, dat, nmax, xmax, x0, lam):
     pars = [xmax, lam]
     f1 = lambda x,p2,p4: gaisser_hillas_log_fithelper(x,nmax,p2,x0,p4)
     f2 = lambda x,p2,p4:     gaisser_hillas_fithelper(x,nmax,p2,x0,p4)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     xmax, lam = pars
     
@@ -109,7 +109,7 @@ def fit_nmax_xmax(dep, dat, nmax, xmax, x0, lam):
     pars = [nmax, xmax]
     f1 = lambda x,p1,p2: gaisser_hillas_log_fithelper(x,p1,p2,x0,lam)
     f2 = lambda x,p1,p2:     gaisser_hillas_fithelper(x,p1,p2,x0,lam)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     nmax, xmax = pars
     
@@ -119,7 +119,7 @@ def fit_nmax_xmax_x0(dep, dat, nmax, xmax, x0, lam):
     pars = [nmax, xmax, x0]
     f1 = lambda x,p1,p2,p3: gaisser_hillas_log_fithelper(x,p1,p2,p3,lam)
     f2 = lambda x,p1,p2,p3:     gaisser_hillas_fithelper(x,p1,p2,p3,lam)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     nmax, xmax, x0 = pars
     
@@ -129,7 +129,7 @@ def fit_nmax_xmax_lam(dep, dat, nmax, xmax, x0, lam):
     pars = [nmax, xmax, lam]
     f1 = lambda x,p1,p2,p4: gaisser_hillas_log_fithelper(x,p1,p2,x0,p4)
     f2 = lambda x,p1,p2,p4:     gaisser_hillas_fithelper(x,p1,p2,x0,p4)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     nmax, xmax, lam = pars
     
@@ -139,7 +139,7 @@ def fit_nmax_xmax_x0_lam(dep, dat, nmax, xmax, x0, lam):
     pars = [nmax, xmax, x0, lam]
     f1 = lambda x,p1,p2,p3,p4: gaisser_hillas_log_fithelper(x,p1,p2,p3,p4)
     f2 = lambda x,p1,p2,p3,p4:     gaisser_hillas_fithelper(x,p1,p2,p3,p4)
-    pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
+    #pars = opt.curve_fit(f1, dep, np.log(dat), p0=pars)[0].tolist()
     pars = opt.curve_fit(f2, dep, dat,         p0=pars)[0].tolist()
     nmax, xmax, x0, lam = pars
     
@@ -160,7 +160,7 @@ def gaisser_hillas_fit(depth, data):
 
     nmax, xmax, x0, lam = fit_x0(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_lam(dep, dat, nmax, xmax, x0, lam)
-    nmax, xmax, x0, lam = fit_x0_lam(dep, dat, nmax, xmax, x0, lam)
+    #nmax, xmax, x0, lam = fit_x0_lam(dep, dat, nmax, xmax, x0, lam)
 
     nmax, xmax, x0, lam = fit_xmax(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_lam(dep, dat, nmax, xmax, x0, lam)
@@ -168,7 +168,7 @@ def gaisser_hillas_fit(depth, data):
 
     nmax, xmax, x0, lam = fit_x0(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_lam(dep, dat, nmax, xmax, x0, lam)
-    nmax, xmax, x0, lam = fit_x0_lam(dep, dat, nmax, xmax, x0, lam)
+    #nmax, xmax, x0, lam = fit_x0_lam(dep, dat, nmax, xmax, x0, lam)
 
     nmax, xmax, x0, lam = fit_nmax_xmax(dep, dat, nmax, xmax, x0, lam)
     nmax, xmax, x0, lam = fit_lam(dep, dat, nmax, xmax, x0, lam)
