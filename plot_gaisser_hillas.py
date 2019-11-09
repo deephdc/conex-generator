@@ -25,6 +25,8 @@ file_suffix = args.suffix
 
 
 import numpy as np
+import scipy as sp
+import scipy.stats as spstats
 import json
 import os
 import itertools as it
@@ -91,7 +93,7 @@ allxlabel = {
         "lam": "lam (g/cm^2)",
 }
 
-def plot_distributions(gparam, rparam, numbins, primary_name):
+def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
     for pind, cind in it.product(range(numparam), range(numchannel)):
         param_name = fp_index_to_name[pind]
         channel_name = channel_index_to_name[cind]
@@ -101,6 +103,20 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
         if param_name == "nmax":
             glist = np.log10(glist)
             rlist = np.log10(rlist)
+
+        # make bins
+        glower = np.min(glist)
+        gupper = np.max(glist)
+        rlower = np.min(rlist)
+        rupper = np.max(rlist)
+        rrange = rupper - rlower
+        rwidth = rrange/numbins
+
+        lower = max([min([glower, rlower]), rlower-0.25*rrange])
+        upper = min([max([gupper, rupper]), rupper+0.25*rrange])
+        numbins_new = int(np.ceil((upper - lower) / rwidth))
+
+        bins = np.linspace(lower, upper, numbins_new+1)
         
         # plot both
         filename = "b_" + channel_name + "_" + param_name + "_" + primary_name + ".svg"
@@ -123,9 +139,9 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
         plt.ylabel("counts")
         plt.title(title)
 
-        _, bins, _ = plt.hist(
+        plt.hist(
                 rlist,
-                bins=numbins,
+                bins=bins,
                 label=label1,
                 color=color1,
                 alpha=0.9,
@@ -147,72 +163,73 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
         plt.close(fig)
 
 
-        # plot solo g
-        filename = "g_" + channel_name + "_" + param_name + "_" + primary_name + ".svg"
-        label = "GAN"
-        color = "C3"
-        clist = glist
+        if solo:
+            # plot solo g
+            filename = "g_" + channel_name + "_" + param_name + "_" + primary_name + ".svg"
+            label = "GAN"
+            color = "C3"
+            clist = glist
 
-        fig = plt.figure(figsize=(16,9))
-        title = pretty_name(
-                "distribution: " \
-                + param_name \
-                + ", channel: " \
-                + channel_name \
-                + ", primary: " \
-                + primary_name)
-        xlabel = pretty_name(allxlabel[param_name])
+            fig = plt.figure(figsize=(16,9))
+            title = pretty_name(
+                    "distribution: " \
+                    + param_name \
+                    + ", channel: " \
+                    + channel_name \
+                    + ", primary: " \
+                    + primary_name)
+            xlabel = pretty_name(allxlabel[param_name])
 
-        plt.xlabel(xlabel)
-        plt.ylabel("counts")
-        plt.title(title)
+            plt.xlabel(xlabel)
+            plt.ylabel("counts")
+            plt.title(title)
 
-        plt.hist(
-                clist,
-                bins=bins,
-                label=label,
-                color=color,
-                alpha=1.0,
-                edgecolor="black",
-                linewidth=2.0)
+            plt.hist(
+                    clist,
+                    bins=bins,
+                    label=label,
+                    color=color,
+                    alpha=1.0,
+                    edgecolor="black",
+                    linewidth=2.0)
 
-        plt.legend()
-        plt.savefig(os.path.join(plot_path, filename))
-        plt.close(fig)
+            plt.legend()
+            plt.savefig(os.path.join(plot_path, filename))
+            plt.close(fig)
 
 
-        # plot solo r
-        filename = "r_" + channel_name + "_" + param_name + "_" + primary_name + ".svg"
-        label = "CONEX"
-        color = "C0"
-        clist = rlist
+            # plot solo r
+            filename = "r_" + channel_name + "_" + param_name + "_" + primary_name + ".svg"
+            label = "CONEX"
+            color = "C0"
+            clist = rlist
 
-        fig = plt.figure(figsize=(16,9))
-        title = pretty_name(
-                "distribution: " \
-                + param_name \
-                + ", channel: " \
-                + channel_name \
-                + ", primary: " \
-                + primary_name)
-        xlabel = pretty_name(allxlabel[param_name])
+            fig = plt.figure(figsize=(16,9))
+            title = pretty_name(
+                    "distribution: " \
+                    + param_name \
+                    + ", channel: " \
+                    + channel_name \
+                    + ", primary: " \
+                    + primary_name)
+            xlabel = pretty_name(allxlabel[param_name])
 
-        plt.xlabel(xlabel)
-        plt.ylabel("counts")
-        plt.title(title)
+            plt.xlabel(xlabel)
+            plt.ylabel("counts")
+            plt.title(title)
 
-        plt.hist(
-                clist,
-                bins=bins,
-                label=label,
-                color=color,
-                alpha=1.0,
-                edgecolor="black",
-                linewidth=2.0)
+            plt.hist(
+                    clist,
+                    bins=bins,
+                    label=label,
+                    color=color,
+                    alpha=1.0,
+                    edgecolor="black",
+                    linewidth=2.0)
 
-        plt.legend()
-        plt.savefig(os.path.join(plot_path, filename))
-        plt.close(fig)
+            plt.legend()
+            plt.savefig(os.path.join(plot_path, filename))
+            plt.close(fig)
 
 
 # all label
@@ -224,6 +241,8 @@ for primary in allprimaries:
     index = np.where(label[:,0] == primary)[0]
     tgparam = gparam[index,:,:]
     trparam = rparam[index,:,:]
+    tbinnum = min([int(np.ceil(len(tgparam)/50)), binnum])
     primary_name = primary_index_to_name[int(primary)]
-    plot_distributions(tgparam, trparam, int(binnum/len(allprimaries))+1, primary_name)
+
+    plot_distributions(tgparam, trparam, tbinnum, primary_name)
 
