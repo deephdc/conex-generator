@@ -20,7 +20,6 @@ logging.basicConfig(
         level = logging.DEBUG,
         format = "%(asctime)s - %(levelname)-8.8s: %(name)s: %(message)s",
         handlers = [
-            logging.FileHandler("log.txt"),
             logging.StreamHandler(),
             ]
         )
@@ -29,9 +28,9 @@ log = logging.getLogger(__name__)
 # =========
 # load data
 # =========
-datadir = "/cr/users/koepke/data/conex"
-data : np.ndarray = np.load(os.path.join(datadir, "data.npy"))[:,:,0:8]
-label : np.ndarray = np.load(os.path.join(datadir, "label.npy"))
+datadir = "/cr/users/koepke/data/network/conex-generator/data/processed/run02"
+data : np.ndarray = np.load(os.path.join(datadir, "particle_distribution.npy"))
+label : np.ndarray = np.load(os.path.join(datadir, "label.npy"))[:,0:4]
 
 testlen = 10000
 
@@ -420,9 +419,9 @@ with tf.Session() as sess:
                 yin: label[0:testlen],
                 nin: n_batch,
         })
-        np.save("gdata",  xout,             fix_imports=False)
-        np.save("glabel", label[0:testlen], fix_imports=False)
-        np.save("rdata",  data[0:testlen],  fix_imports=False)
+        np.save("/cr/users/koepke/data/network/conex-generator/models/gan/run02/99/gdata.npy", xout, fix_imports=False)
+        np.save("/cr/users/koepke/data/network/conex-generator/models/gan/run02/99/label.npy", label[0:testlen], fix_imports=False)
+        np.save("/cr/users/koepke/data/network/conex-generator/models/gan/run02/99/rdata.npy", data[0:testlen], fix_imports=False)
         runtime = timeit.default_timer() - starttime
         log.info(f"runtime: {runtime} seconds")
         break
