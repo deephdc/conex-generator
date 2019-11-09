@@ -58,8 +58,16 @@ label = np.load(os.path.join(gaiser_hillas_path, "label" + file_suffix + "_cond.
 gparam = np.load(os.path.join(gaiser_hillas_path, "gfitparam" + file_suffix + ".npy"))
 rparam = np.load(os.path.join(gaiser_hillas_path, "rfitparam" + file_suffix + ".npy"))
 
-gparam = gparam[~np.any(np.isnan(gparam), axis=1)]
-rparam = rparam[~np.any(np.isnan(rparam), axis=1)]
+condition_nan = np.logical_or(np.any(np.isnan(gparam), axis=1), np.any(np.isnan(rparam), axis=1))
+index nan = np.where(condition_nan)[0]
+if len(index_nan) != 0:
+    print("removing nans from index", index_nan)
+    index_nonan = np.where(np.logical_not(condition_nan))[0]
+    gdata = gdata[index_nonan,:,:]
+    rdata = rdata[index_nonan,:,:]
+    label = label[index_nonan,:,:]
+    gparam = gparam[index_nonan,:]
+    rparam = rparam[index_nonan,:]
 
 with open(os.path.join(gaiser_hillas_path, "fitparam" + file_suffix + "_metadata.json"), "r") as fp:
     fpmeta = json.load(fp)
