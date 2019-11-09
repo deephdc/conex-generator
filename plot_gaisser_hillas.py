@@ -39,7 +39,7 @@ root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
 gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
 
-plot_path = os.path.join(model_path, "plots", src.utils.timestamp())
+plot_path = os.path.join(model_path, "plots", src.utils.timestamp() + file_suffix)
 os.makedirs(plot_path)
 
 def pretty_name(string : str):
@@ -57,6 +57,9 @@ label = np.load(os.path.join(gaiser_hillas_path, "label" + file_suffix + "_cond.
 
 gparam = np.load(os.path.join(gaiser_hillas_path, "gfitparam" + file_suffix + ".npy"))
 rparam = np.load(os.path.join(gaiser_hillas_path, "rfitparam" + file_suffix + ".npy"))
+
+gparam = gparam[~np.any(np.isnan(gparam), axis=1)]
+rparam = rparam[~np.any(np.isnan(rparam), axis=1)]
 
 with open(os.path.join(gaiser_hillas_path, "fitparam" + file_suffix + "_metadata.json"), "r") as fp:
     fpmeta = json.load(fp)

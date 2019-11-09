@@ -29,7 +29,7 @@ parser.add_argument(
         action="store_const",
         const=True,
         default=False,
-        help="stop script on fit instability"
+        help="set nan on fit error"
         )
 
 args = parser.parse_args()
@@ -44,7 +44,6 @@ import numpy as np
 import scipy as sp
 import os
 import json
-import traceback
 
 import src
 
@@ -103,10 +102,12 @@ for ii in range(numdata):
         try:
             gparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, gdata[ii,:,jj])
             rparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, rdata[ii,:,jj])
+        except KeyboardInterrupt:
+            exit(0)
         except:
-            traceback.print_exc()
+            gparam[ii,jj,:] = np.nan
+            rparam[ii,jj,:] = np.nan
             print("param fit error at: ", (ii,jj))
-            exit(1)
 
 np.save(os.path.join(gaisser_hillas_path, "gdata" + file_suffix + "_cond.npy"), gdata, fix_imports=False)
 np.save(os.path.join(gaisser_hillas_path, "rdata" + file_suffix + "_cond.npy"), rdata, fix_imports=False)
@@ -124,6 +125,7 @@ with open(os.path.join(gaisser_hillas_path, "fitparam" + file_suffix + "_metadat
                 },
             "energy_cut": ecut,
             "theta_cut": tcut,
+            "fit_error": fit_error,
         },
         fp,
         indent = 4
