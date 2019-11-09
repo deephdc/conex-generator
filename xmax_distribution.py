@@ -2,24 +2,49 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
+        "ecut",
+        nargs=2,
+        type=float,
+        help="lower and upper bound of the energy cut in GeV"
+        )
+parser.add_argument(
+        "tcut",
+        nargs=2,
+        type=float,
+        help="lower and upper bound of the theta cut in deg"
+        )
+parser.add_argument(
         "path",
         type=str,
         help="model data path relative to the project root directory"
         )
 parser.add_argument(
-        "ecut",
-        type=float,
-        help="energy cut in GeV"
+        "--suffix",
+        default="",
+        type=str,
+        help="data file suffix"
         )
+parser.add_argument(
+        "--fit-error",
+        action="store_const",
+        const=True,
+        default=False,
+        help="stop script on fit instability"
+        )
+
 args = parser.parse_args()
-model_base = args.path
 ecut = args.ecut
+tcut = args.tcut
+model_base = args.path
+file_suffix = args.suffix
+fit_error = args.fit_error
 
 
 import numpy as np
 import scipy as sp
 import os
 import json
+import traceback
 
 import src
 
@@ -29,17 +54,17 @@ gaisser_hillas_path = os.path.join(model_path, "gaisser_hillas")
 if not os.path.isdir(gaisser_hillas_path):
     os.mkdir(gaisser_hillas_path)
 
-gdata = np.load(os.path.join(model_path, "gdata.npy"))
-rdata = np.load(os.path.join(model_path, "rdata.npy"))
-label = np.load(os.path.join(model_path, "label.npy"))
+gdata = np.load(os.path.join(model_path, "gdata" + file_suffix + ".npy"))
+rdata = np.load(os.path.join(model_path, "rdata" + file_suffix + ".npy"))
+label = np.load(os.path.join(model_path, "label" + file_suffix + ".npy"))
 
 # prepare data
 condition1 = label[:,0] >= 2
-print("condition1: ", np.sum(condition1))
-condition2 = label[:,1] >= ecut
-print("condition2: ", np.sum(condition2))
-condition3 = label[:,2] >= 35
-print("condition3: ", np.sum(condition3))
+print("primary condition: ", np.sum(condition1))
+condition2 = np.logical_and(label[:,1] >= ecut[0], label[:,1] < ecut[1])
+print("energy condition: ", np.sum(condition2))
+condition3 = np.logical_and(label[:,2] >= tcut[0], label[:,2] < tcut[1])
+print("theta condition: ", np.sum(condition3))
 condition = np.logical_and(np.logical_and(condition1, condition2), condition3)
 print("total condition: ", np.sum(condition))
 index = np.where(condition)[0]
@@ -66,40 +91,29 @@ channel = list(range(7))
 depth = np.arange(rdata.shape[1])*10.0 + 10.0
 
 # calculate distributions
-np.seterr(all="raise")
-sp.special.seterr(all="raise")
+if fit_error:
+    np.seterr(all="raise")
+    sp.special.seterr(all="raise")
+
 gparam = np.zeros((numdata, len(channel), 4))
 rparam = np.zeros((numdata, len(channel), 4))
 
-gind = []
-rind = []
 for ii in range(numdata):
     for jj in range(len(channel)):
         try:
             gparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, gdata[ii,:,jj])
-        except:
-            gparam[ii,jj,:] = np.nan
-            gind.append((ii,jj))
-            print("gparam fit error at: ", (ii,jj))
-        try:
             rparam[ii,jj,:] = src.analysis.gaisser_hillas_fit(depth, rdata[ii,:,jj])
         except:
-            rparam[ii,jj,:] = np.nan
-            rind.append((ii,jj))
-            print("rparam fit error at: ", (ii,jj))
+            traceback.print_exc()
+            print("param fit error at: ", (ii,jj))
+            exit(1)
 
-if len(gind) != 0 or len(rind) != 0:
-    print("fit error at index:")
-    print("gind = ", gind)
-    print("rind = ", rind)
-
-
-np.save(os.path.join(gaisser_hillas_path, "gdata_cond.npy"), gdata, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "rdata_cond.npy"), rdata, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "label_cond.npy"), label, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "gfitparam.npy"), gparam, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "rfitparam.npy"), rparam, fix_imports=False)
-with open(os.path.join(gaisser_hillas_path, "fitparam_metadata.json"), "w") as fp:
+np.save(os.path.join(gaisser_hillas_path, "gdata" + file_suffix + "_cond.npy"), gdata, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "rdata" + file_suffix + "_cond.npy"), rdata, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "label" + file_suffix + "_cond.npy"), label, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "gfitparam" + file_suffix + ".npy"), gparam, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "rfitparam" + file_suffix + ".npy"), rparam, fix_imports=False)
+with open(os.path.join(gaisser_hillas_path, "fitparam" + file_suffix + "_metadata.json"), "w") as fp:
     json.dump(
         {
             "fitparam_layout": {
