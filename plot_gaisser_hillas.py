@@ -2,18 +2,27 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
+        "bins",
+        type=int,
+        help="number of bins for combined histograms"
+        )
+parser.add_argument(
         "path",
         type=str,
         help="model data path relative to the project root directory"
         )
 parser.add_argument(
-        "bins",
-        type=int,
-        help="number of bins for combined histograms"
+        "--suffix",
+        default="",
+        type=str,
+        help="data file suffix"
         )
+
 args = parser.parse_args()
-model_base = args.path
 binnum = args.bins
+model_base = args.path
+file_suffix = args.suffix
+
 
 import numpy as np
 import json
@@ -42,14 +51,14 @@ def pretty_name(string : str):
     string = string.replace("lam", "lambda")
     return string
 
-gdata = np.load(os.path.join(gaiser_hillas_path, "gdata_cond.npy"))
-rdata = np.load(os.path.join(gaiser_hillas_path, "rdata_cond.npy"))
-label = np.load(os.path.join(gaiser_hillas_path, "label_cond.npy"))
+gdata = np.load(os.path.join(gaiser_hillas_path, "gdata" + file_suffix + "_cond.npy"))
+rdata = np.load(os.path.join(gaiser_hillas_path, "rdata" + file_suffix + "_cond.npy"))
+label = np.load(os.path.join(gaiser_hillas_path, "label" + file_suffix + "_cond.npy"))
 
-gparam = np.load(os.path.join(gaiser_hillas_path, "gfitparam.npy"))
-rparam = np.load(os.path.join(gaiser_hillas_path, "rfitparam.npy"))
+gparam = np.load(os.path.join(gaiser_hillas_path, "gfitparam" + file_suffix + ".npy"))
+rparam = np.load(os.path.join(gaiser_hillas_path, "rfitparam" + file_suffix + ".npy"))
 
-with open(os.path.join(gaiser_hillas_path, "fitparam_metadata.json"), "r") as fp:
+with open(os.path.join(gaiser_hillas_path, "fitparam" + file_suffix + "_metadata.json"), "r") as fp:
     fpmeta = json.load(fp)
 fp_index_to_name = {value: key for key,value in fpmeta["fitparam_layout"].items()}
 
@@ -70,7 +79,6 @@ allxlabel = {
         "x0": "X0 (g/cm^2)",
         "lam": "lam (g/cm^2)",
 }
-
 
 def plot_distributions(gparam, rparam, numbins, primary_name):
     for pind, cind in it.product(range(numparam), range(numchannel)):
@@ -199,6 +207,7 @@ def plot_distributions(gparam, rparam, numbins, primary_name):
 # all label
 plot_distributions(gparam, rparam, binnum, "all")
 
+# per primary
 allprimaries = set(label[:,0].tolist())
 for primary in allprimaries:
     index = np.where(label[:,0] == primary)[0]

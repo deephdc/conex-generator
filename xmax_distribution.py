@@ -121,7 +121,9 @@ with open(os.path.join(gaisser_hillas_path, "fitparam" + file_suffix + "_metadat
                 "xmax": 1,
                 "x0": 2,
                 "lam": 3,
-                }
+                },
+            "energy_cut": ecut,
+            "theta_cut": tcut,
         },
         fp,
         indent = 4
