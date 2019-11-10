@@ -282,7 +282,7 @@ for primary in allprimaries:
     index = np.where(label[:,0] == primary)[0]
     tgparam = gparam[index,:,:]
     trparam = rparam[index,:,:]
-    tbinnum = min([int(np.ceil(len(tgparam)/50)), binnum])
+    tbinnum = max([min([int(np.ceil(len(tgparam)/50)), binnum]), int(np.ceil(binnum/len(allprimaries)))])
     primary_name = primary_index_to_name[int(primary)]
 
     plot_distributions(tgparam, trparam, tbinnum, primary_name)
