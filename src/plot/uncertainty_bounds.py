@@ -83,7 +83,7 @@ def uncertainty_bounds(
         plot_path,
         depth,
         bdata, bsteps, bplot_label,
-        ldata, lsteps, lplot_label,
+        ldata, lindex, lplot_label,
         label,
         avgwindowsize = 5):
 
@@ -104,9 +104,25 @@ def uncertainty_bounds(
         log.error(msg)
         raise AssertionError(msg)
 
+    try:
+        lsteps = iter(lindex)
+        for ind in lsteps:
+            if ind > bsteps - 1 or ind < -bsteps:
+                msg = "line index out of bounds"
+                log.error(msg)
+                raise AssertionError(msg)
+    except:
+        log.error("lindex error")
+        raise
+
 
     for ii in range(0,numdata,bsteps):
-        for jj in range(0,bsteps,lsteps):
+        lsteps = iter(lindex)
+
+        for jj in lsteps:
+            if jj < 0:
+                jj = bsteps - jj
+
             for kk in range(numchannel):
                 outparticle = channel_index_to_name[kk]
                 inparticle = primary_index_to_name[int(label[ii+jj,0])]

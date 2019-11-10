@@ -57,6 +57,6 @@ src.plot.uncertainty_bounds(
         plot_path,
         depth,
         rdata, gsteps, "CONEX",
-        gdata, lsteps, "GAN",
+        gdata, range(0,gsteps,lsteps), "GAN",
         label)
 
