@@ -42,7 +42,10 @@ import src
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
 
-plot_path = os.path.join(model_path, "plots", src.utils.timestamp() + file_suffix)
+plot_path = os.path.join(
+        model_path,
+        "plots",
+        src.utils.timestamp() + file_suffix + "_bounds")
 os.makedirs(plot_path)
 
 gdata = np.load(os.path.join(model_path, "gdata" + file_suffix + ".npy"))

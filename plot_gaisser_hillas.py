@@ -37,7 +37,10 @@ root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
 gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
 
-plot_path = os.path.join(gaiser_hillas_path, "plots", src.utils.timestamp() + file_suffix)
+plot_path = os.path.join(
+        gaiser_hillas_path,
+        "plots",
+        src.utils.timestamp() + file_suffix + "_fitparam")
 os.makedirs(plot_path)
 
 gdata = np.load(os.path.join(gaiser_hillas_path, "gdata" + file_suffix + "_cond.npy"))
