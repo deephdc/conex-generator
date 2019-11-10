@@ -93,7 +93,7 @@ allxlabel = {
         "lam": "lam (g/cm^2)",
 }
 
-def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
+def plot_distributions(gparam, rparam, numbins, primary_name, solo=False, outlier=True):
     for pind, cind in it.product(range(numparam), range(numchannel)):
         param_name = fp_index_to_name[pind]
         channel_name = channel_index_to_name[cind]
@@ -115,8 +115,9 @@ def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
         lower = max([min([glower, rlower]), rlower-0.25*rrange])
         upper = min([max([gupper, rupper]), rupper+0.25*rrange])
         numbins_new = int(np.ceil((upper - lower) / rwidth))
+        bwidth = (upper - lower) / numbins_new
 
-        bins = np.linspace(lower, upper, numbins_new+1)
+        bins = np.linspace(lower-bwidth, upper+bwidth, numbins_new+1+2)
         
         # plot both
         filename = "b_" + channel_name + "_" + param_name + "_" + primary_name + ".svg"
@@ -139,9 +140,29 @@ def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
         plt.ylabel("counts")
         plt.title(title)
 
+        if outlier:
+            plt.hist(
+                    np.concatenate((bins[0]*np.ones(np.sum(rlist < bins[1])), bins[-1]*np.ones(np.sum(rlist > bins[-2])))),
+                    bins=bins,
+                    color=color1,
+                    alpha=0.9,
+                    hatch="/",
+                    edgecolor="black",
+                    linewidth=2.0)
+
+            plt.hist(
+                    np.concatenate((bins[0]*np.ones(np.sum(glist < bins[1])), bins[-1]*np.ones(np.sum(glist > bins[-2])))),
+                    bins=bins,
+                    color=color2,
+                    alpha=0.8,
+                    hatch="/",
+                    edgecolor="black",
+                    linewidth=2.0,
+                    rwidth=0.65)
+
         plt.hist(
                 rlist,
-                bins=bins,
+                bins=bins[1:-1],
                 label=label1,
                 color=color1,
                 alpha=0.9,
@@ -150,7 +171,7 @@ def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
 
         plt.hist(
                 glist,
-                bins=bins,
+                bins=bins[1:-1],
                 label=label2,
                 color=color2,
                 alpha=0.8,
@@ -184,9 +205,19 @@ def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
             plt.ylabel("counts")
             plt.title(title)
 
+            if outlier:
+                plt.hist(
+                        np.concatenate((bins[0]*np.ones(np.sum(clist < bins[1])), bins[-1]*np.ones(np.sum(clist > bins[-2])))),
+                        bins=bins,
+                        color=color,
+                        alpha=1.0,
+                        hatch="/",
+                        edgecolor="black",
+                        linewidth=2.0)
+
             plt.hist(
                     clist,
-                    bins=bins,
+                    bins=bins[1:-1],
                     label=label,
                     color=color,
                     alpha=1.0,
@@ -218,9 +249,19 @@ def plot_distributions(gparam, rparam, numbins, primary_name, solo=False):
             plt.ylabel("counts")
             plt.title(title)
 
+            if outlier:
+                plt.hist(
+                        np.concatenate((bins[0]*np.ones(np.sum(clist < bins[1])), bins[-1]*np.ones(np.sum(clist > bins[-2])))),
+                        bins=bins,
+                        color=color,
+                        alpha=1.0,
+                        hatch="/",
+                        edgecolor="black",
+                        linewidth=2.0)
+
             plt.hist(
                     clist,
-                    bins=bins,
+                    bins=bins[1:-1],
                     label=label,
                     color=color,
                     alpha=1.0,
