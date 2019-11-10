@@ -30,6 +30,12 @@ parser.add_argument(
         help="use GAN for bounds and CONEX for line plot"
         )
 parser.add_argument(
+        "--maxdepth",
+        default=1500.0,
+        type=float,
+        help="maximum depth for plots"
+        )
+parser.add_argument(
         "--maxplots",
         default=720,
         type=int,
@@ -42,6 +48,7 @@ lsteps = args.lsteps
 model_base = args.path
 file_suffix = args.suffix
 switch_model = args.switch_model
+maxdepth = args.maxdepth
 maxplots = args.maxplots
 
 
@@ -72,7 +79,7 @@ label = np.load(os.path.join(model_path, "label" + file_suffix + ".npy"))
 depth = np.arange(rdata.shape[1])*10.0 + 10.0
 
 # remove > 1500 g/cm^2
-dind = np.where(depth <= 1500.0)[0]
+dind = np.where(depth <= maxdepth)[0]
 gdata = gdata[:,dind,:]
 rdata = rdata[:,dind,:]
 depth = depth[dind]
