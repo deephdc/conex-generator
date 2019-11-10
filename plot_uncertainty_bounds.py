@@ -29,6 +29,12 @@ parser.add_argument(
         default=False,
         help="use GAN for bounds and CONEX for line plot"
         )
+parser.add_argument(
+        "--maxplots",
+        default=720,
+        type=int,
+        help="maximum number of plots to be saved"
+        )
 
 args = parser.parse_args()
 gsteps = args.gsteps
@@ -36,6 +42,7 @@ lsteps = args.lsteps
 model_base = args.path
 file_suffix = args.suffix
 switch_model = args.switch_model
+maxplots = args.maxplots
 
 
 import numpy as np
@@ -77,12 +84,14 @@ if switch_model:
             depth,
             gdata, gsteps, "GAN",
             rdata, range(0,gsteps,lsteps), "CONEX",
-            label)
+            label,
+            maxplots=maxplots)
 else:
     src.plot.uncertainty_bounds(
             plot_path,
             depth,
             rdata, gsteps, "CONEX",
             gdata, range(0,gsteps,lsteps), "GAN",
-            label)
+            label,
+            maxplots=maxplots)
 

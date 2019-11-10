@@ -85,7 +85,8 @@ def uncertainty_bounds(
         bdata, bsteps, bplot_label,
         ldata, lindex, lplot_label,
         label,
-        avgwindowsize = 5):
+        avgwindowsize = 5,
+        maxplots = 720):
 
     numdata = bdata.shape[0]
     if numdata == 0:
@@ -115,7 +116,7 @@ def uncertainty_bounds(
         log.error("lindex error")
         raise
 
-
+    curplot = 0
     for ii in range(0,numdata,bsteps):
         lsteps = iter(lindex)
 
@@ -157,4 +158,8 @@ def uncertainty_bounds(
 
                 plt.savefig(os.path.join(plot_path, filename))
                 plt.close(fig)
+
+                curplot += 1
+                if curplot >= maxplots:
+                    return
 
