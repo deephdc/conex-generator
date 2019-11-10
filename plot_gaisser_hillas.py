@@ -33,16 +33,17 @@ matplotlib.rcParams.update({"font.size": 20})
 import src
 
 
+# paths
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
 gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
-
 plot_path = os.path.join(
         gaiser_hillas_path,
         "plots",
         src.utils.timestamp() + file_suffix + "_fitparam")
 os.makedirs(plot_path)
 
+# load data
 gdata = np.load(os.path.join(gaiser_hillas_path, "gdata" + file_suffix + "_cond.npy"))
 rdata = np.load(os.path.join(gaiser_hillas_path, "rdata" + file_suffix + "_cond.npy"))
 label = np.load(os.path.join(gaiser_hillas_path, "label" + file_suffix + "_cond.npy"))
