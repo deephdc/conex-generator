@@ -41,7 +41,6 @@ import src
 
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
-gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
 
 plot_path = os.path.join(model_path, "plots", src.utils.timestamp() + file_suffix)
 os.makedirs(plot_path)
@@ -57,3 +56,4 @@ src.plot.uncertainty_bounds(
         rdata, gsteps, "CONEX",
         gdata, lsteps, "GAN",
         label)
+
