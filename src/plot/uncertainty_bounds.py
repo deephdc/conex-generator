@@ -8,6 +8,12 @@ import src.utils
 log = src.utils.getLogger(__name__)
 
 
+def pretty_name(string : str):
+    string = string.replace("mup", "muon+")
+    string = string.replace("mum", "muon-")
+    return string
+
+
 data_layout = src.data.numpy_data_layout()["particle_distribution"]
 channel_index_to_name = {value: key for key, value in data_layout.items()}
 
@@ -144,7 +150,7 @@ def uncertainty_bounds(
                 fig = plt.figure(figsize=(16,9))
 
                 plt.xlabel("depth (g/cm^2)")
-                plt.ylabel("particle number (" + outparticle + ")")
+                plt.ylabel(pretty_name("particle number (" + outparticle + ")"))
                 plt.title(titlestring)
                 plt.grid(True)
 
