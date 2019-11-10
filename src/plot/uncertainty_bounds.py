@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 import src.data
+import src.analysis
 import src.utils
 log = src.utils.getLogger(__name__)
 
@@ -14,12 +15,7 @@ particle_label = src.data.numpy_particle_label()
 primary_index_to_name = {value: key for key, value in particle_label.items()}
 
 
-def running_mean(x, N):
-    cumsum = np.cumsum(np.insert(x, 0, 0)) 
-    return (cumsum[N:] - cumsum[:-N]) / float(N)
-
-
-def fill_uncertainity_bounds(depth, data, plot_label, avgwindowsize = 5):
+def fill_bounds(depth, data, plot_label, avgwindowsize = 1):
     numdata = data.shape[0]
     if numdata == 0:
         msg = "input is empty"
@@ -35,9 +31,9 @@ def fill_uncertainity_bounds(depth, data, plot_label, avgwindowsize = 5):
     data_avg = np.mean(data, axis=0)
     data_std = np.std(data, axis=0)
 
-    depth_rm = running_mean(depth, avgwindowsize)
-    data_avg_rm = running_mean(data_avg, avgwindowsize)
-    data_std_rm = running_mean(data_std, avgwindowsize)
+    depth_rm = src.analysis.running_mean(depth, avgwindowsize)
+    data_avg_rm = src.analysis.running_mean(data_avg, avgwindowsize)
+    data_std_rm = src.analysis.running_mean(data_std, avgwindowsize)
 
     plt.fill_between(
             depth_rm,
@@ -70,15 +66,15 @@ def fill_uncertainity_bounds(depth, data, plot_label, avgwindowsize = 5):
             color="C1", alpha=0.3)
 
 
-def plot_line(depth, data, plot_label, avgwindowsize = 5):
+def red_line(depth, data, plot_label, avgwindowsize = 1):
     numpoints = data.shape[0]
     if numpoints != len(depth):
         msg = "depth has different length than data"
         log.error(msg)
         raise AssertionError(msg)
 
-    depth_rm = running_mean(depth, avgwindowsize)
-    data_rm = running_mean(data, avgwindowsize)
+    depth_rm = src.analysis.running_mean(depth, avgwindowsize)
+    data_rm = src.analysis.running_mean(data, avgwindowsize)
 
     plt.plot(depth_rm, data_rm, linewidth=5, label=plot_label, color="C3")
 
@@ -136,10 +132,10 @@ def uncertainty_bounds(
                 plt.grid(True)
 
                 tbdata = bdata[ii:ii+bsteps,:,kk]
-                fill_uncertainity_bounds(depth, tbdata, bplot_label, avgwindowsize)
+                fill_bounds(depth, tbdata, bplot_label, avgwindowsize)
 
                 tldata = ldata[ii+jj,:,kk]
-                plot_line(depth, tldata, lplot_label, avgwindowsize)
+                red_line(depth, tldata, lplot_label, avgwindowsize)
                 
                 plt.legend()
 
