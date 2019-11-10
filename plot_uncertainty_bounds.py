@@ -50,9 +50,11 @@ import src
 # set paths
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
+
 plot_path = os.path.join(
-        model_path,
-        "plots",
+        src.reports.figures.get_path(),
+        model_base,
+        "uncertainty_bounds",
         src.utils.timestamp() + file_suffix + "_bounds")
 os.makedirs(plot_path)
 

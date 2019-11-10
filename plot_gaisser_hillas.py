@@ -37,9 +37,11 @@ import src
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
 gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
+
 plot_path = os.path.join(
-        gaiser_hillas_path,
-        "plots",
+        src.reports.figures.get_path(),
+        model_base,
+        "gaisser_hillas",
         src.utils.timestamp() + file_suffix + "_fitparam")
 os.makedirs(plot_path)
 
