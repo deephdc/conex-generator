@@ -71,6 +71,9 @@ def gaisser_hillas_hist(plot_path, gparam, rparam, binnum, primary, solo=False, 
         param_name = fp_index_to_name[pind]
         channel_name = channel_index_to_name[cind]
 
+        foldername = os.path.join(param_name, primary_name)
+        os.makedirs(os.path.join(plot_path, foldername), exist_ok=True)
+
         glist = gparam[:,cind,pind]
         rlist = rparam[:,cind,pind]
         if param_name == "nmax":
@@ -153,7 +156,7 @@ def gaisser_hillas_hist(plot_path, gparam, rparam, binnum, primary, solo=False, 
                 rwidth=0.65)
 
         plt.legend()
-        plt.savefig(os.path.join(plot_path, filename))
+        plt.savefig(os.path.join(plot_path, foldername, filename))
         plt.close(fig)
 
 
@@ -198,7 +201,7 @@ def gaisser_hillas_hist(plot_path, gparam, rparam, binnum, primary, solo=False, 
                     linewidth=2.0)
 
             plt.legend()
-            plt.savefig(os.path.join(plot_path, filename))
+            plt.savefig(os.path.join(plot_path, foldername, filename))
             plt.close(fig)
 
 
@@ -242,6 +245,6 @@ def gaisser_hillas_hist(plot_path, gparam, rparam, binnum, primary, solo=False, 
                     linewidth=2.0)
 
             plt.legend()
-            plt.savefig(os.path.join(plot_path, filename))
+            plt.savefig(os.path.join(plot_path, foldername, filename))
             plt.close(fig)
 

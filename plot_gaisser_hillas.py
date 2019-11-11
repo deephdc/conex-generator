@@ -9,19 +9,12 @@ parser.add_argument(
 parser.add_argument(
         "path",
         type=str,
-        help="model data path relative to the project root directory"
-        )
-parser.add_argument(
-        "--suffix",
-        default="",
-        type=str,
-        help="data file suffix"
+        help="path to Gaisser-Hillas fit parameter (relative to the project root directory)"
         )
 
 args = parser.parse_args()
 binnum = args.bins
 model_base = args.path
-file_suffix = args.suffix
 
 
 import numpy as np
@@ -35,23 +28,15 @@ import src
 
 # paths
 root_path = src.utils.get_root_path()
-model_path = os.path.join(root_path, model_base)
-gaiser_hillas_path = os.path.join(model_path, "gaisser_hillas")
-
-plot_path = os.path.join(
-        src.reports.figures.get_path(),
-        model_base,
-        "gaisser_hillas",
-        src.utils.timestamp() + file_suffix + "_fitparam")
-os.makedirs(plot_path)
+gaiser_hillas_path = os.path.join(root_path, model_base)
 
 # load data
-gdata = np.load(os.path.join(gaiser_hillas_path, "gdata" + file_suffix + "_cond.npy"))
-rdata = np.load(os.path.join(gaiser_hillas_path, "rdata" + file_suffix + "_cond.npy"))
-label = np.load(os.path.join(gaiser_hillas_path, "label" + file_suffix + "_cond.npy"))
+gdata = np.load(os.path.join(gaiser_hillas_path, "gdata_cond.npy"))
+rdata = np.load(os.path.join(gaiser_hillas_path, "rdata_cond.npy"))
+label = np.load(os.path.join(gaiser_hillas_path, "label_cond.npy"))
 
-gparam = np.load(os.path.join(gaiser_hillas_path, "gfitparam" + file_suffix + ".npy"))
-rparam = np.load(os.path.join(gaiser_hillas_path, "rfitparam" + file_suffix + ".npy"))
+gparam = np.load(os.path.join(gaiser_hillas_path, "gfitparam.npy"))
+rparam = np.load(os.path.join(gaiser_hillas_path, "rfitparam.npy"))
 
 condition_nan = np.logical_or(np.any(np.isnan(gparam), axis=(1,2)), np.any(np.isnan(rparam), axis=(1,2)))
 index_nan = np.where(condition_nan)[0]
@@ -64,6 +49,12 @@ if len(index_nan) != 0:
     gparam = gparam[index_nonan,:,:]
     rparam = rparam[index_nonan,:,:]
 
+# plot path
+plot_path = os.path.join(
+        src.reports.figures.get_path(),
+        model_base,
+        src.utils.timestamp() + "_fitparam")
+os.makedirs(plot_path)
 
 # all label
 src.plot.gaisser_hillas_hist(plot_path, gparam, rparam, binnum, "all")

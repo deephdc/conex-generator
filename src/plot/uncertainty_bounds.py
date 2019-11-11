@@ -147,6 +147,8 @@ def uncertainty_bounds(
                         + titlestring.replace(" ","").replace(",","_") \
                         + "_" + outparticle + ".svg"
 
+                foldername = inparticle
+
                 fig = plt.figure(figsize=(16,9))
 
                 plt.xlabel("depth (g/cm^2)")
@@ -162,7 +164,8 @@ def uncertainty_bounds(
                 
                 plt.legend()
 
-                plt.savefig(os.path.join(plot_path, filename))
+                os.makedirs(os.path.join(plot_path, foldername), exist_ok=True)
+                plt.savefig(os.path.join(plot_path, foldername, filename))
                 plt.close(fig)
 
                 curplot += 1
