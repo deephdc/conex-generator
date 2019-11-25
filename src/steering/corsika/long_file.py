@@ -75,7 +75,7 @@ def read_long_file(filepath):
 
     pd_list = np.transpose(particle_distribution_list, (0,2,1))
     ed_list = np.transpose(energy_deposit_list, (0,2,1))
-    return (pd_list, ed_list)
+    return (pd_list[:,:,0:-2], ed_list[:,:,0:-2])
 
 
 def make_dataobject(particle, energy, theta, phi, obslevel,
