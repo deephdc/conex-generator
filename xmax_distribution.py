@@ -49,7 +49,14 @@ import src
 
 root_path = src.utils.get_root_path()
 model_path = os.path.join(root_path, model_base)
-gaisser_hillas_path = os.path.join(model_path, "gaisser_hillas")
+gaisser_hillas_path = os.path.join(
+        model_path,
+        "gaisser_hillas" \
+                + file_suffix \
+                + f"_ecut_{ecut[0]:.2e}_{ecut[1]:.2e}" \
+                + f"_tcut_{tcut[0]:.2e}_{tcut[1]:.2e}" \
+                + f"_fit-error_{fit_error}"
+        )
 if not os.path.isdir(gaisser_hillas_path):
     os.mkdir(gaisser_hillas_path)
 
@@ -109,12 +116,12 @@ for ii in range(numdata):
             rparam[ii,jj,:] = np.nan
             print("param fit error at: ", (ii,jj))
 
-np.save(os.path.join(gaisser_hillas_path, "gdata" + file_suffix + "_cond.npy"), gdata, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "rdata" + file_suffix + "_cond.npy"), rdata, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "label" + file_suffix + "_cond.npy"), label, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "gfitparam" + file_suffix + ".npy"), gparam, fix_imports=False)
-np.save(os.path.join(gaisser_hillas_path, "rfitparam" + file_suffix + ".npy"), rparam, fix_imports=False)
-with open(os.path.join(gaisser_hillas_path, "fitparam" + file_suffix + "_metadata.json"), "w") as fp:
+np.save(os.path.join(gaisser_hillas_path, "gdata_cond.npy"), gdata, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "rdata_cond.npy"), rdata, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "label_cond.npy"), label, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "gfitparam.npy"), gparam, fix_imports=False)
+np.save(os.path.join(gaisser_hillas_path, "rfitparam.npy"), rparam, fix_imports=False)
+with open(os.path.join(gaisser_hillas_path, "fitparam_metadata.json"), "w") as fp:
     json.dump(
         {
             "fitparam_layout": {
