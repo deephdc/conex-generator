@@ -40,7 +40,7 @@ print(particle_list)
 src.steering.corsika.clean_env()
 
 # physical parameters
-energy_range = [17, 20]
+energy_range = [17, 21]
 theta_range = [0.0, 65.0]
 phi_range = [-180.0, 180.0]
 obslevel_range = [-1e5, -1e5]
