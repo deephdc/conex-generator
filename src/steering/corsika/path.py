@@ -18,7 +18,7 @@ def get_run_path():
 
 def get_corsika_path():
     runpath = get_run_path()
-    filename = "corsika77000Linux_QGSII_gheisha_thin_conex"
+    filename = "corsika77000Linux_QGSII_urqmd_thin_conex"
     
     return os.path.join(runpath, filename)
 
