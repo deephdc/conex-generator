@@ -18,7 +18,7 @@ MAGNET  2.010E+01  -1.420E+01          magnetic field centr. Europe
 * HADFLG  0  0  0  0  0  2             flags hadr.interact.&fragmentation
 THIN    1.000000E-06 73966 10000
 CORSIKA F
-ECUTS   1.000E-01 1.000E-01 2.500E-04 2.500E-04           energy cuts for particles
+ECUTS   3.000E-01 1.000E-01 2.500E-04 2.500E-04           energy cuts for particles
 CASCADE T T T
 MUADDI  T                              additional info for muons
 MUMULT  T                              muon multiple scattering angle
