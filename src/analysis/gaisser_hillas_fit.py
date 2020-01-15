@@ -32,7 +32,7 @@ def transform_param(p1, p2, p3, p4):
 
     return (nmax, xmax, x0, lam)
 
-def transform_param_inv(nxmax, xmax, x0, lam):
+def transform_param_inv(nmax, xmax, x0, lam):
     p1 = np.abs(nmax)
     p2 = np.abs(xmax)
     p3 = np.arctanh((x0  + shift_x0) *2.0/range_x0  - 1.0)*scale_x0  - inverse_x0
