@@ -62,7 +62,9 @@ def memorymap_run(run, expand_depth, overwrite=False):
         log.info("writing %s*.npy files to disk", feature)
         for meta in metadata:
             data = expand_data(meta, feature, depthfeatures[feature]["len"], runpath)
-            filepath = os.path.join(outpath, feature + ".npy")
+            jsonfile = meta["json_file"]
+            timestamp = jsonfile.split("_")[-1].split(".json")[0]
+            filepath = os.path.join(outpath, feature + "_" + timestamp + ".npy")
             np.save(filepath, data, fix_imports=False)
             del(data)
 
@@ -72,7 +74,7 @@ def memorymap_run(run, expand_depth, overwrite=False):
         copy_label(meta, runpath, outpath)
 
     # write metadata
-    meta = create_metadata(metadata, run, numdata, expand_depth)
+    meta = create_metadata(metadata, run, expand_depth)
     meta["particle_distribution"]["depth"] = depth_pd.tolist()
     meta["energy_deposit"]["depth"] = depth_ed.tolist()
     filepath = os.path.join(outpath, "metadata.json")
@@ -82,7 +84,6 @@ def memorymap_run(run, expand_depth, overwrite=False):
 
 
 def expand_data(meta, feature, depthlen, runpath):
-    # get numdata
     numdata = meta["length"]
     numchannel = meta[feature]["number_of_features"]
 
@@ -110,7 +111,7 @@ def copy_label(meta, runpath, outpath):
     shutil.copyfile(filepath, copypath)
 
 
-def create_metadata(metadata, run, numdata, expand_depth):
+def create_metadata(metadata, run, expand_depth):
     log.info("creating metadata")
 
     jsonfiles = []
@@ -119,7 +120,7 @@ def create_metadata(metadata, run, numdata, expand_depth):
     for value in metadata:
         jsonfiles.append(value["json_file"])
         expand_depths.append(value["expand_depth"])
-        numdata += meta["length"]
+        numdata += value["length"]
 
     meta = {
             "json_files": list(jsonfiles),

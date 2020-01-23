@@ -1,5 +1,6 @@
 import shutil
 import os
+import glob
 
 import src.utils
 log = src.utils.getLogger(__name__)
@@ -9,8 +10,10 @@ curpath = get_path()
 
 
 def clear_run(run):
-    rmpath = os.path.join(curpath, run)
-    if os.path.isdir(rmpath):
-        log.info("removing %s", rmpath)
-        shutil.rmtree(rmpath)
+    rmpath_glob = os.path.join(curpath, run)
+    rmpaths = glob.glob(rmpath_glob)
+    for path in rmpaths:
+        if os.path.isdir(path):
+            log.info("removing %s", path)
+            shutil.rmtree(path)
 
