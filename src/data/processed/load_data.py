@@ -11,14 +11,8 @@ from . import get_path
 curpath = get_path()
 
 
-def load_data(run, memorymap=False):
-    if memorymap:
-        runpath = os.path.join(curpath, run + "_memorymap")
-        mmap_mode = "r"
-    else:
-        runpath = os.path.join(curpath, run + "_memorymap")
-        mmap_mode = None
-
+def load_data(run, memorymap=True):
+    runpath = os.path.join(curpath, run)
     check_files(runpath)
 
     filepath_pd = os.path.join(runpath, "particle_distribution*.npy")
@@ -31,33 +25,29 @@ def load_data(run, memorymap=False):
 
     particle_distribution = []
     for f in files_pd:
-        curnumpy = np.load(f, mmap_mode=mmap_mode, fix_imports=False)
-        ds = make_dataset(curnumpy, memorymap)
+        ds = load_dataset(f, memorymap)
         particle_distribution.append(ds)
     particle_distribution = concatenate_datasets(particle_distribution)
 
     energy_deposit = []
     for f in files_ed:
-        curnumpy = np.load(f, mmap_mode=mmap_mode, fix_imports=False)
-        ds = make_dataset(curnumpy, memorymap)
+        ds = load_dataset(f, memorymap)
         energy_deposit.append(ds)
     energy_deposit = concatenate_datasets(energy_deposit)
 
     label = []
     for f in files_label:
-        curnumpy = np.load(f, mmap_mode=mmap_mode, fix_imports=False)
-        ds = make_dataset(curnumpy, memorymap)
+        ds = load_dataset(f, memorymap)
         label.append(ds)
     label = concatenate_datasets(label)
 
-
-    tempds = tf.data.Dataset.zip((particle_distribution, energy_deposit))
-    dataset = tf.data.Dataset.zip((tempds, label))
+    #tempds = zip(particle_distribution, energy_deposit)
+    #dataset = zip(tempds, label)
 
     with open(os.path.join(runpath, "metadata.json"), "r") as fp:
         metadata = json.load(fp)
 
-    return (dataset, metadata)
+    return (particle_distribution, energy_deposit, label, metadata)
 
 
 def check_files(runpath):
@@ -95,20 +85,23 @@ def check_files(runpath):
         raise IOError(msg)
 
 
-def make_dataset(array, memorymap):
+def load_dataset(filepath, memorymap):
     if memorymap:
+        array = np.load(filepath, mmap_mode="r", fix_imports=False)
         ds = tf.data.Dataset.from_generator(
                 data_generator,
-                args=[array],
+                args=[filepath],
                 output_types=array.dtype,
                 output_shapes=array.shape[1:])
     else:
+        array = np.load(filepath, fix_imports=False)
         ds = tf.data.Dataset.from_tensor_slices(array)
 
     return ds
 
 
-def data_generator(array):
+def data_generator(filepath):
+    array = np.load(filepath, mmap_mode="r", fix_imports=False)
     return (data for data in array)
 
 
