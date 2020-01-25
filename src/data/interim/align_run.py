@@ -16,8 +16,8 @@ processedpath = get_processed_path()
 from .merge_run import get_depth_features
 
 
-def memorymap_run(run, expand_depth, overwrite=False):
-    outpath = os.path.join(processedpath, run + "_memorymap")
+def align_run(run, expand_depth, overwrite=False):
+    outpath = os.path.join(processedpath, run)
     try:
         os.mkdir(outpath)
     except FileExistsError:
