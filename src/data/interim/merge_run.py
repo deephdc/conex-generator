@@ -14,7 +14,7 @@ processedpath = get_processed_path()
 
 
 def merge_run(run, expand_depth, overwrite=False):
-    outpath = os.path.join(processedpath, run)
+    outpath = os.path.join(processedpath, run + "_merge")
     try:
         os.mkdir(outpath)
     except FileExistsError:
@@ -78,7 +78,6 @@ def merge_run(run, expand_depth, overwrite=False):
     log.info("writing metadata.json to disk")
     with open(filepath, "w") as fp:
         json.dump(meta, fp, indent=4)
-
 
 
 def merge_data(metadata, feature, depthlen, runpath):
