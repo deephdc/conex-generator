@@ -86,26 +86,32 @@ def create_dataobject(filename, run, expand_depth):
             )
 
     # create data placeholders
-    data_pd = np.zeros(
+    data_pd = np.full(
             [
                 numdata,
                 depthfeatures["particle_distribution"]["len"],
                 len(numpy_data_layout["particle_distribution"]),
-            ])
+            ],
+            np.nan,
+            dtype=np.float)
 
-    data_ed = np.zeros(
+    data_ed = np.full(
             [
                 numdata,
                 depthfeatures["energy_deposit"]["len"],
                 len(numpy_data_layout["energy_deposit"]),
-            ])
+            ],
+            np.nan,
+            dtype=np.float)
 
     # create label placeholder
-    label = np.zeros(
+    label = np.full(
             [
                 numdata,
                 len(numpy_label_layout),
-            ])
+            ],
+            np.nan,
+            dtype=np.float)
 
     # data processing loop
     log.info("writing json values to numpy")

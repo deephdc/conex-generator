@@ -90,7 +90,7 @@ def merge_data(metadata, feature, depthlen, runpath):
 
     numchannel = metadata[0][feature]["number_of_features"]
 
-    data = np.zeros((numdata, depthlen, numchannel))
+    data = np.full((numdata, depthlen, numchannel), np.nan, dtype=np.float)
     curindex = 0
     for value in metadata:
         jsonfile = value["json_file"]
@@ -115,7 +115,7 @@ def merge_label(metadata, runpath):
 
     numchannel = metadata[0]["label"]["number_of_features"]
 
-    data = np.zeros((numdata, numchannel))
+    data = np.full((numdata, numchannel), np.nan, dtype=np.float)
     curindex = 0
     for value in metadata:
         jsonfile = value["json_file"]

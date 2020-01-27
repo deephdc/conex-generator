@@ -87,7 +87,7 @@ def expand_data(meta, feature, depthlen, runpath):
     numdata = meta["length"]
     numchannel = meta[feature]["number_of_features"]
 
-    data = np.zeros((numdata, depthlen, numchannel))
+    data = np.full((numdata, depthlen, numchannel), np.nan, dtype=np.float)
 
     jsonfile = meta["json_file"]
     timestamp = jsonfile.split("_")[-1].split(".json")[0]
