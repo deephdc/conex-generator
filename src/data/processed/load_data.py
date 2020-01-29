@@ -11,7 +11,7 @@ from . import get_path
 curpath = get_path()
 
 
-def load_data(run, memorymap=True):
+def load_data(run, memorymap=True, batchread=-5):
     runpath = os.path.join(curpath, run)
     check_files(runpath)
 
@@ -25,24 +25,21 @@ def load_data(run, memorymap=True):
 
     particle_distribution = []
     for f in files_pd:
-        ds = load_dataset(f, memorymap)
+        ds = load_dataset(f, memorymap, batchread)
         particle_distribution.append(ds)
     particle_distribution = concatenate_datasets(particle_distribution)
 
     energy_deposit = []
     for f in files_ed:
-        ds = load_dataset(f, memorymap)
+        ds = load_dataset(f, memorymap, batchread)
         energy_deposit.append(ds)
     energy_deposit = concatenate_datasets(energy_deposit)
 
     label = []
     for f in files_label:
-        ds = load_dataset(f, memorymap)
+        ds = load_dataset(f, memorymap, batchread)
         label.append(ds)
     label = concatenate_datasets(label)
-
-    #tempds = zip(particle_distribution, energy_deposit)
-    #dataset = zip(tempds, label)
 
     with open(os.path.join(runpath, "metadata.json"), "r") as fp:
         metadata = json.load(fp)
@@ -85,14 +82,22 @@ def check_files(runpath):
         raise IOError(msg)
 
 
-def load_dataset(filepath, memorymap):
+def load_dataset(filepath, memorymap, batchread):
     if memorymap:
         array = np.load(filepath, mmap_mode="r", fix_imports=False)
-        ds = tf.data.Dataset.from_generator(
-                data_generator,
-                args=[filepath],
-                output_types=array.dtype,
-                output_shapes=array.shape[1:])
+        if batchread == 0:
+            ds = tf.data.Dataset.from_generator(
+                    make_data_generator,
+                    args=[filepath, batchread],
+                    output_types=array.dtype,
+                    output_shapes=array.shape[1:])
+        else:
+            ds = tf.data.Dataset.from_generator(
+                    make_data_generator,
+                    args=[filepath, batchread],
+                    output_types=array.dtype,
+                    output_shapes=(None, *array.shape[1:]))
+            ds = ds.unbatch()
     else:
         array = np.load(filepath, fix_imports=False)
         ds = tf.data.Dataset.from_tensor_slices(array)
@@ -100,9 +105,24 @@ def load_dataset(filepath, memorymap):
     return ds
 
 
-def data_generator(filepath):
+def make_data_generator(filepath, batchread):
+    if batchread == 0:
+        return line_generator(filepath)
+    else:
+        return batch_generator(filepath, batchread)
+
+def line_generator(filepath):
     array = np.load(filepath, mmap_mode="r", fix_imports=False)
     return (data for data in array)
+
+def batch_generator(filepath, batchread):
+    array = np.load(filepath, mmap_mode="r", fix_imports=False)
+    length = array.shape[0]
+    if batchread < 0:
+        batchread = int(np.ceil(-length/batchread))
+
+    for ii in range(0, length, batchread):
+        yield array[ii:ii+batchread]
 
 
 def concatenate_datasets(datasets):
