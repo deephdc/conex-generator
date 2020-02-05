@@ -6,7 +6,7 @@ class LabelMerger(tf.keras.Model):
     def __init__(self, maxdata, **kwargs):
         super().__init__(**kwargs)
 
-        self.maxdata = maxdata
+        self.maxdata = tf.cast(maxdata, tf.float32)
 
         self.label_layer1 = tf.keras.layers.Dense(4096, activation=tf.nn.tanh)
         self.label_layer2 = tf.keras.layers.Dense(8192, activation=tf.nn.tanh)

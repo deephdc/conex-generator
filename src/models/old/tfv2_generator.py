@@ -7,7 +7,7 @@ class Generator(tf.keras.Model):
     def __init__(self, maxdata, **kwargs):
         super().__init__(**kwargs)
 
-        self.maxdata = maxdata
+        self.maxdata = tf.cast(maxdata, tf.float32)
 
         self.nheight = 4
         self.nwidth = 16
