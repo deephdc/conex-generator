@@ -1,10 +1,13 @@
-import src
-import src.models.old.tfv2_generator as tfgen
-import src.models.old.tfv2_discriminator as tfdis
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import tensorflow as tf
 import numpy as np
 import timeit
+
+import src
+import src.models.old.tfv2_generator as tfgen
+import src.models.old.tfv2_discriminator as tfdis
 
 data = src.data.processed.load_data("run01")
 
@@ -21,14 +24,28 @@ pd = pd.prefetch(int(2**16))
 pd = pd.batch(1024).map(nantozero, num_parallel_calls=tf.data.experimental.AUTOTUNE).unbatch()
 pd = pd.batch(1024).map(extrazero, num_parallel_calls=tf.data.experimental.AUTOTUNE).unbatch()
 
+pd = pd.cache("/home/tmp/pd")
+start = timeit.default_timer()
+for x in pd:
+    pass
+end = timeit.default_timer()
+print("cache time", end-start)
+
 label : tf.data.Dataset = data[2]
 label = label.prefetch(int(2**16))
 
+label = label.cache("/home/tmp/label")
+start = timeit.default_timer()
+for x in label:
+    pass
+end = timeit.default_timer()
+print("cache time", end-start)
+
 def noise_gen():
     for ii in range(5):
-        yield np.random.uniform(-1,1,100*1024).reshape(1024,100)
+        yield np.random.uniform(-1,1,100*1024*1024).reshape(1024*1024,100)
 
-noise = tf.data.Dataset.from_generator(noise_gen, tf.float32, (1024,100)).unbatch().repeat()
+noise = tf.data.Dataset.from_generator(noise_gen, tf.float32, (1024*1024,100)).unbatch().repeat()
 
 ds = tf.data.Dataset.zip((label, noise, pd))
 ds = ds.shuffle(int(2**14)).batch(1024).prefetch(4)
@@ -51,20 +68,41 @@ for x,y,z in ds:
     wd = wassersteindistance((x,z,fake,))
     break
 
-dopt = tf.keras.optimizers.Nadam()
-gopt = tf.keras.optimizers.Nadam()
+dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
+gopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
 
-@tf.function
-def train(generator, discriminator, wassersteindistance, gradientpenalty, dataset, optimizers):
-    for x,y,z in dataset:
-        with tf.GradientTape(watch_accessed_variables=False) as tape:
-            tape.watch(discriminator.trainable_weights)
-            fake = generator((x,y,))
-            wd = wassersteindistance((x,z,fake,))
-            gp = gradientpenalty((x,z,fake,))
-            loss = - wd + 10*gp
-        grads = tape.gradient(loss, discriminator.trainable_weights)
-        optimizers.apply_gradients(zip(grads, discriminator.trainable_weights))
-        break
+def train(gen, dis, wd, gp, dataset : tf.data.Dataset, dopt, gopt, epochs):
+    ds = dataset.repeat(epochs)
+    try:
+        for ii, (label,noise,data) in iter(ds.enumerate()):
+            if ii % 5 == 4:
+                with tf.GradientTape(watch_accessed_variables=False) as tape:
+                    tape.watch(gen.trainable_weights)
+                    fake = gen((label, noise,))
+                    distance = wd((label, data, fake,))
+                    loss = distance
+                grads = tape.gradient(loss, gen.trainable_weights)
+                dopt.apply_gradients(zip(grads, gen.trainable_weights))
+            else:
+                with tf.GradientTape(watch_accessed_variables=False) as tape:
+                    tape.watch(dis.trainable_weights)
+                    fake = gen((label, noise,))
+                    distance = wd((label, data, fake,))
+                    penalty = gp((label, data, fake,))
+                    loss = - distance + 10 * penalty
+                grads = tape.gradient(loss, dis.trainable_weights)
+                dopt.apply_gradients(zip(grads, dis.trainable_weights))
+    except KeyboardInterrupt:
+        pass
 
-train(generator, discriminator, wassersteindistance, gradientpenalty, ds, dopt)
+print("training ...")
+start = timeit.default_timer()
+train(generator, discriminator, wassersteindistance, gradientpenalty, ds, dopt, gopt, 1)
+end = timeit.default_timer()
+print("training time", end-start)
+
+for x,y,z in ds.take(1):
+    test = generator.predict((x,y,))
+generator.save("./output/old")
+print("done ...")
+
