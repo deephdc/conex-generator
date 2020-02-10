@@ -97,7 +97,7 @@ def train(gen, dis, wd, gp, dataset : tf.data.Dataset, dopt, gopt, epochs):
 
 print("training ...")
 start = timeit.default_timer()
-train(generator, discriminator, wassersteindistance, gradientpenalty, ds, dopt, gopt, 1)
+train(generator, discriminator, wassersteindistance, gradientpenalty, ds, dopt, gopt, 15000)
 end = timeit.default_timer()
 print("training time", end-start)
 
