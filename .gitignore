@@ -1,6 +1,7 @@
 /data
 /models
 /reports
+/output
 /test
 /test.py
 /log.txt
