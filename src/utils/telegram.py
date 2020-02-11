@@ -2,6 +2,7 @@ import requests
 import json
 import logging
 import os
+import threading
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 telegram_config_path = os.path.join(script_path, "telegram.json")
@@ -20,7 +21,7 @@ def send_to_bot(message):
             + message
 
     try:
-        response = requests.get(text)
+        response = requests.get(text, timeout=5)
         retval = response.json()
     except:
         retval = None
@@ -35,5 +36,7 @@ class TelegramHandler(logging.StreamHandler):
 
     def emit(self, record):
         message = self.format(record)
-        send_to_bot(message)
+        thread = threading.Thread(target=send_to_bot, args=(message,))
+        thread.setDaemon(True)
+        thread.start()
 
