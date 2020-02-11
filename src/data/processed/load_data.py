@@ -1,4 +1,8 @@
-import tensorflow as tf
+import lazy_import
+
+#import tensorflow as tf
+tf = lazy_import.lazy_module("tensorflow")
+
 import numpy as np
 import os
 import glob
