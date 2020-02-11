@@ -6,14 +6,20 @@ from . import get_root_path
 root_path = get_root_path()
 log_path = os.path.join(root_path, "log.txt")
 
+from .telegram import TelegramHandler
+
 logging.basicConfig(
         level = logging.WARNING,
         format = f"%(levelname)-1.1s/%(asctime)s/{uuid.uuid4()}/%(name)s: %(message)s",
         handlers = [
             logging.FileHandler(log_path),
             logging.StreamHandler(),
+            TelegramHandler()
             ]
         )
+
+#disable tensorflow cpp logging
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 def getLogger(name = None, level = None):
     if level is not None:

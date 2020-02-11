@@ -10,3 +10,4 @@ tensorboard/
 __pycache__/
 
 *.swp
+telegram.json
