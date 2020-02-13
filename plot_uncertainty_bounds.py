@@ -54,9 +54,7 @@ maxplots = args.maxplots
 
 import numpy as np
 import os
-
 import matplotlib
-matplotlib.rcParams.update({"font.size": 20})
 
 import src
 

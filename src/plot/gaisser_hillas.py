@@ -35,9 +35,9 @@ fp_index_to_name = {value: key for key,value in fitparam_layout.items()}
 
 allxlabel = {
         "nmax": "log(Nmax)",
-        "xmax": "Xmax (g/cm^2)",
-        "x0": "X0 (g/cm^2)",
-        "lam": "lam (g/cm^2)",
+        "xmax": r"Xmax ($\mathrm{g}\,\mathrm{cm}^{-2})$",
+        "x0": r"X0 ($\mathrm{g}\,\mathrm{cm}^{-2})$",
+        "lam": "lam ($\mathrm{g}\,\mathrm{cm}^{-2})$",
 }
 
 

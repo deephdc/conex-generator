@@ -151,7 +151,7 @@ def uncertainty_bounds(
 
                 fig = plt.figure(figsize=(16,9))
 
-                plt.xlabel("depth (g/cm^2)")
+                plt.xlabel("depth ($\mathrm{g}\,\mathrm{cm}^{-2})$")
                 plt.ylabel(pretty_name("particle number (" + outparticle + ")"))
                 plt.title(titlestring)
                 plt.grid(True)
