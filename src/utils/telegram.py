@@ -6,21 +6,21 @@ import threading
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 telegram_config_path = os.path.join(script_path, "telegram.json")
-with open(telegram_config_path, "r") as fp:
-    config = json.load(fp)
+try:
+    with open(telegram_config_path, "r") as fp:
+        config = json.load(fp)
+except:
+    pass
 
-bot_token = config["api-token"]
-bot_chatID = config["chat-id"]
 
 def send_to_bot(message):
-    text = "https://api.telegram.org/bot" \
-            + bot_token \
-            + "/sendMessage?chat_id=" \
-            + bot_chatID \
-            + "&parse_mode=Markdown&text=" \
-            + message
-
     try:
+        text = "https://api.telegram.org/bot" \
+                + config["api-token"] \
+                + "/sendMessage?chat_id=" \
+                + config["chat-id"] \
+                + "&parse_mode=Markdown&text=" \
+                + message
         response = requests.get(text, timeout=5)
         retval = response.json()
     except:
