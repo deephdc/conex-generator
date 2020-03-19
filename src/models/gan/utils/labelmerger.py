@@ -1,9 +1,9 @@
 import tensorflow as tf
 
 
-class LabelMerger(tf.keras.Layer):
+class LabelMerger(tf.keras.layers.Layer):
 
-    def __init__(self, pd_maxdata, ed_maxdata, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @tf.function
