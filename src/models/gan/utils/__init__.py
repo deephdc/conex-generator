@@ -1,0 +1,2 @@
+from .labelmerger import LabelMerger
+
