@@ -41,8 +41,6 @@ class DataMerger(tf.keras.layers.Layer):
                             axis=2)
         ed_part = tf.gather(energy_deposit, self._ed_feature_list,
                             axis=2)
-        tf.print(ed_part.shape)
-
         tensor = tf.concat([pd_part, ed_part], -1)
 
         return tensor
@@ -75,7 +73,6 @@ class DataSplitter(tf.keras.layers.Layer):
         return gatherindex
 
     def build(self, input_shape):
-        self._batchsize = input_shape[0]
         self._depthlen = input_shape[1]
 
         pd_numfeatures = len(self._pd_feature_list)
@@ -83,10 +80,10 @@ class DataSplitter(tf.keras.layers.Layer):
         assert pd_numfeatures + ed_numfeatures == input_shape[2]
 
         self._pd_dummy = tf.cast(
-                tf.fill([self._batchsize, self._depthlen, 8], np.nan),
+                tf.fill([1, self._depthlen, 8], np.nan),
                 tf.float32)
         self._ed_dummy = tf.cast(
-                tf.fill([self._batchsize, self._depthlen, 9], np.nan),
+                tf.fill([1, self._depthlen, 9], np.nan),
                 tf.float32)
 
         super().build(input_shape)
@@ -94,23 +91,18 @@ class DataSplitter(tf.keras.layers.Layer):
     @tf.function
     def call(self, inputs, training=False):
         splitindex = len(self._pd_feature_list)
-
         pd_part = inputs[:,:,:splitindex]
         ed_part = inputs[:,:,splitindex:]
 
-        pd_temp = tf.concat([pd_part, self._pd_dummy], -1)
-        ed_temp = tf.concat([ed_part, self._ed_dummy], -1)
+        current_batchsize = tf.shape(inputs)[0]
+        pd_dummy = tf.tile(self._pd_dummy, [current_batchsize, 1, 1])
+        ed_dummy = tf.tile(self._ed_dummy, [current_batchsize, 1, 1])
+
+        pd_temp = tf.concat([pd_part, pd_dummy], -1)
+        ed_temp = tf.concat([ed_part, ed_dummy], -1)
 
         pd = tf.gather(pd_temp, self._pd_gatherindex, axis=2)
         ed = tf.gather(ed_temp, self._ed_gatherindex, axis=2)
 
         return (pd, ed)
-
-
-
-def ret_gatherindex(feature_list, numfeatures):
-        gatherindex = np.arange(numfeatures) + len(feature_list)
-        for ii,_ in enumerate(gatherindex):
-            if ii in feature_list:
-                gatherindex[ii] = feature_list.index(ii)
 

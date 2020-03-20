@@ -80,17 +80,18 @@ dd = gan.utils.DataDenormalizer(pd_maxdata, ed_maxdata)
 lm = gan.utils.LabelMerger()
 dmerger = gan.utils.DataMerger()
 dsplitter = gan.utils.DataSplitter()
+@tf.function
+def testfunc(dn, dd, lm, dmerger, dsplitter):
+    for x in ds:
+        pdd = x[1]
+        edd = x[2]
+        
+        r1,r2 = dn((pdd, edd))
+        a = dmerger((r1, r2))
+        t1,t2 = dsplitter(a)
+        s1,s2 = dd((t1,t2))
 
-for x in ds.take(1):
-    pdd = tf.where(tf.math.is_nan(x[1]), 0.0, x[1])
-    edd = tf.where(tf.math.is_nan(x[2]), 0.0, x[2])
-    
-    r1,r2 = dn((pdd, edd))
-    s1,s2 = dd((r1,r2))
-
-    a = dmerger((pdd, edd))
-    t1,t2 = dsplitter(a)
-
-d1 = tf.abs(pdd - s1)
-d2 = tf.abs(edd - s2)
+start = timeit.default_timer()
+testfunc(dn,dd,lm,dmerger,dsplitter)
+end = timeit.default_timer()
 
