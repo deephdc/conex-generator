@@ -55,10 +55,11 @@ label = label.batch(prefetchlen//2) \
 label = src.data.cache_dataset(label, "label")
 label = label.prefetch(prefetchlen)
 
-ds = tf.data.Dataset.zip((label, pd, ed))
+noise1 = src.data.random.uniform_dataset((100,))
+
+ds = tf.data.Dataset.zip((label, pd, ed, noise1))
 ds : tf.data.Dataset = ds.shuffle(100000).batch(1024).prefetch(5)
 
-noise = src.data.random.uniform_dataset((100,))
 
 # get data maximum estimate
 pd_maxdata = tf.zeros(8, dtype=tf.float32)
@@ -75,23 +76,7 @@ for batch in ds.take(100):
 # tests
 import src.models.gan as gan
 
-dn = gan.utils.DataNormalizer(pd_maxdata, ed_maxdata)
-dd = gan.utils.DataDenormalizer(pd_maxdata, ed_maxdata)
-lm = gan.utils.LabelMerger()
-dmerger = gan.utils.DataMerger()
-dsplitter = gan.utils.DataSplitter()
-@tf.function
-def testfunc(dn, dd, lm, dmerger, dsplitter):
-    for x in ds:
-        pdd = x[1]
-        edd = x[2]
-        
-        r1,r2 = dn((pdd, edd))
-        a = dmerger((r1, r2))
-        t1,t2 = dsplitter(a)
-        s1,s2 = dd((t1,t2))
-
-start = timeit.default_timer()
-testfunc(dn,dd,lm,dmerger,dsplitter)
-end = timeit.default_timer()
+gen = gan.Generator(pd_maxdata, ed_maxdata)
+for la,pd,ed,n1 in ds.take(1):
+    out = gen((la,n1,))
 

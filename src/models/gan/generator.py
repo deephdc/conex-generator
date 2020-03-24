@@ -1,78 +1,67 @@
 import tensorflow as tf
 
+from .utils.datamerger import DataSplitter
+from .utils.datanormalizer import DataDenormalizer
+from .utils.labelmerger import LabelMerger
+
 
 class Generator(tf.keras.Model):
 
-    def __init__(self, maxdata, numparticle = 6, **kwargs):
+    def __init__(self, pd_maxdata, ed_maxdata, pd_feature_list=None,
+                 ed_feature_list=None, numparticle=6, **kwargs):
         super().__init__(**kwargs)
-        self.maxdata = maxdata
+
+        self.pd_maxdata = pd_maxdata
+        self.ed_maxdata = ed_maxdata
         self._numparticle = numparticle
 
-        self.first_dense = tf.keras.layers.Dense(512)
 
-        self.dense_generator = DenseGenerator()
+        self.datasplitter = DataSplitter(pd_feature_list, ed_feature_list)
+        self.denormalizer = DataDenormalizer(self.pd_maxdata, self.ed_maxdata)
+        self.gen_features = self.datasplitter.gen_features
 
+        self.dense_generator = DenseGenerator(self.gen_features,
+                                              self._numparticle)
 
     @tf.function
     def call(self, inputs, training=False):
         label = inputs[0]
         noise1 = inputs[1]
 
-        # normalize inputs
-        particle = tf.cast(label[:,0], tf.int32)
-        particle_oh = tf.cast(tf.one_hot(particle, self._numparticle), tf.float32)
-        energy = label[:,1] / 1e10
-        theta = label[:,2] / 90.0
-        phi = label[:,3] / 180.0
+        # run different generators
+        output1 = self.dense_generator((label,noise1,))
 
-        tensor = tf.concat(
-            [
-                noise,
-                particle_oh,
-                tf.expand_dims(energy, -1),
-                tf.expand_dims(theta, -1),
-                tf.expand_dims(phi, -1),
-            ],
-            -1
-        )
-
-        tensor = self.first_dense(tensor)
-
-        output1 = self.dense_generator(tensor)
-
+        # merge outputs
         tensor = output1
 
-        temp0 = tf.expand_dims(tensor[:,:,0] * self.maxdata[0], -1)
-        temp1 = tf.expand_dims(tensor[:,:,1] * self.maxdata[1], -1)
-        temp2 = tf.expand_dims(tensor[:,:,2] * self.maxdata[2], -1)
-        temp3 = tf.expand_dims(tensor[:,:,3] * self.maxdata[3], -1)
-        temp4 = tf.expand_dims(tensor[:,:,4] * self.maxdata[4], -1)
-        temp5 = tf.expand_dims(tensor[:,:,5] * self.maxdata[5], -1)
-        temp6 = tf.expand_dims(tensor[:,:,6] * self.maxdata[6], -1)
-
-        tensor = tf.concat(
-                [temp0, temp1, temp2, temp3, temp4, temp5, temp6],
-                -1)
+        # format data
+        tensor = self.datasplitter(tensor)
+        tensor = self.denormalizer(tensor)
 
         return tensor
 
 
 class DenseGenerator(tf.keras.Model):
-    def __init__(self, **kwargs):
+    def __init__(self, gen_features=8, numparticle=6, **kwargs):
         super().__init__(**kwargs)
+
+        self.gen_features = gen_features
+
+        self.labelmerger = LabelMerger(numparticle=numparticle)
 
         self.activation = tf.keras.activations.tanh
 
         self.layer1 = tf.keras.layers.Dense(512)
-        self.layer2 = tf.keras.layers.Dense(4096)
-        self.layer3 = tf.keras.layers.Dense(7*275)
-
+        self.layer2 = tf.keras.layers.Dense(1024)
+        self.layer3 = tf.keras.layers.Dense(self.gen_features * 300)
 
     @tf.function
     def call(self, inputs, training=False):
-        input_shape = tf.shape(inputs)
+        label = inputs[0]
+        noise1 = inputs[1]
 
-        tensor = self.activation(inputs)
+        labeltensor = self.labelmerger(label)
+        tensor = tf.concat([labeltensor, noise1], -1)
 
         tensor = self.layer1(tensor)
         tensor = self.activation(tensor)
@@ -82,18 +71,7 @@ class DenseGenerator(tf.keras.Model):
 
         tensor = self.layer3(tensor)
         tensor = tf.keras.activations.sigmoid(tensor) * 1.5
-        tensor = tf.reshape(tensor, shape=[input_shape[0], 275, 7])
-
-
+        tensor = tf.reshape(tensor, shape=[-1, 300, self.gen_features])
 
         return tensor
-
-
-
-noise = tf.random.uniform((300,100))
-label = tf.ones((300,4))
-maxdata = list(range(7))
-
-gen = Generator(maxdata)
-out = gen((noise,label,))
 

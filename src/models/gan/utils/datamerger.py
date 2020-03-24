@@ -64,6 +64,9 @@ class DataSplitter(tf.keras.layers.Layer):
         self._pd_gatherindex = self.get_gatherindex(self._pd_feature_list, 8)
         self._ed_gatherindex = self.get_gatherindex(self._ed_feature_list, 9)
 
+        self.gen_features = len(self._pd_feature_list) \
+                            + len(self._ed_feature_list)
+
     @staticmethod
     def get_gatherindex(feature_list, numfeatures):
         gatherindex = np.arange(numfeatures) + len(feature_list)
