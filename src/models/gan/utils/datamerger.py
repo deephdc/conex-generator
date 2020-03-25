@@ -32,6 +32,9 @@ class DataMerger(tf.keras.layers.Layer):
         else:
             self._ed_feature_list = ed_feature_list
 
+        self.gen_features = len(self._pd_feature_list) \
+                            + len(self._ed_feature_list)
+
     @tf.function
     def call(self, inputs, training=False):
         particle_distribution = inputs[0]
