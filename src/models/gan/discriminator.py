@@ -1,20 +1,40 @@
 import tensorflow as tf
+import numpy as np
+
+from .utils import DataMerger
+from .utils import DataNormalizer
+from .utils import LabelMerger
+from .utils import UniformSuperposition
+from .utils import DataMaskStandardizer
 
 
-class Superposition(tf.keras.Model):
 
-    def __init__(self, **kwargs):
+class Discriminator(tf.keras.Model):
+
+    def __init__(self, pd_maxdata, ed_maxdata, pd_feature_list=None,
+                 ed_feature_list=None, numparticle=6, **kwargs):
         super().__init__(**kwargs)
 
+        self.pd_maxdata = pd_maxdata
+        self.ed_maxdata = ed_maxdata
+        self._numparticle = numparticle
+
+        self.normalizer = DataNormalizer(self.pd_maxdata, self.ed_maxdata)
+        self.datamerger = DataMerger(pd_feature_list, ed_feature_list)
+        self.standardizer = DataMaskStandardizer()
+    
     @tf.function
     def call(self, inputs, training=False):
-        realdata = tf.cast(inputs[0], tf.float32)
-        fakedata = tf.cast(inputs[1], tf.float32)
+        label = inputs[0]
+        data = inputs[1]
+        mask = inputs[2]
 
-        epsilon = tf.random.uniform(shape = [tf.shape(realdata)[0], 1, 1], dtype=tf.float32)
-        tensor = epsilon * realdata + (1 - epsilon) * fakedata
+        data = self.normalizer(data)
+        data = self.datamerger(data)
+        mask = self.datamerger(mask)
+        data = self.standardizer((data, mask,))
 
-        return tensor
+        return data
 
 
 class Downstream(tf.keras.Model):
@@ -56,20 +76,6 @@ class Downstream(tf.keras.Model):
         return tensor
 
 
-class Discriminator(tf.keras.Model):
-
-    def __init__(self, maxdata, **kwargs):
-        super().__init__(**kwargs)
-
-        self.labelmerger = LabelMerger(maxdata)
-        self.downstream = Downstream()
-    
-    @tf.function
-    def call(self, inputs, training=False):
-        tensor = self.labelmerger(inputs)
-        tensor = self.downstream(tensor)
-
-        return tensor
 
 
 class WassersteinDistance(tf.keras.Model):

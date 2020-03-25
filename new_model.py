@@ -57,26 +57,39 @@ label = label.prefetch(prefetchlen)
 
 noise1 = src.data.random.uniform_dataset((100,))
 
-ds = tf.data.Dataset.zip((label, pd, ed, noise1))
+ds = tf.data.Dataset.zip((
+    label,
+    (pd, ed),
+    (noise1,)
+))
 ds : tf.data.Dataset = ds.shuffle(100000).batch(1024).prefetch(5)
 
-
-# get data maximum estimate
+# get data info: maximum estimate, shape
 pd_maxdata = tf.zeros(8, dtype=tf.float32)
 ed_maxdata = tf.zeros(9, dtype=tf.float32)
 for batch in ds.take(100):
     # pd
-    batchmax = tf.math.reduce_max(tf.abs(batch[1]), axis=(0,1))
+    batchmax = tf.math.reduce_max(tf.abs(batch[1][0]), axis=(0,1))
     pd_maxdata = tf.where(batchmax > pd_maxdata, batchmax, pd_maxdata)
 
     # ed
-    batchmax = tf.math.reduce_max(tf.abs(batch[2]), axis=(0,1))
+    batchmax = tf.math.reduce_max(tf.abs(batch[1][1]), axis=(0,1))
     ed_maxdata = tf.where(batchmax > ed_maxdata, batchmax, ed_maxdata)
+
+for batch in ds.take(1):
+    depthlen  = batch[1][0].shape[1]
 
 # tests
 import src.models.gan as gan
 
-gen = gan.Generator(pd_maxdata, ed_maxdata)
-for la,pd,ed,n1 in ds.take(1):
-    out = gen((la,n1,))
+gen = gan.Generator(depthlen, pd_maxdata, ed_maxdata)
+dis = gan.Discriminator(pd_maxdata, ed_maxdata)
+
+for label,data,noise in ds.take(1):
+    pd = data[0]
+    ed = data[1]
+
+    out1 = gen((label,noise,))
+    out2 = dis((label,out1,data,))
+    out3 = dis((label,data,data,))
 
