@@ -1,5 +1,5 @@
 from . import utils
 
-from .generator import Generator
-from .discriminator import Discriminator
+from .generator import BaseGenerator
+from .discriminator import BaseDiscriminator
 

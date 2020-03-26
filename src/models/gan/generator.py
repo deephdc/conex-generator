@@ -9,7 +9,7 @@ def get_maxdepthlen():
     return 2*2*2*2*2*3*3 # 288
 
 
-class Generator(tf.keras.Model):
+class BaseGenerator(tf.keras.Model):
 
     def __init__(self, depthlen, pd_maxdata, ed_maxdata, pd_feature_list=None,
                  ed_feature_list=None, numparticle=6, **kwargs):

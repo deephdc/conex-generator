@@ -8,8 +8,7 @@ from .utils import UniformSuperposition
 from .utils import DataMaskStandardizer
 
 
-
-class Discriminator(tf.keras.Model):
+class BaseDiscriminator(tf.keras.Model):
 
     def __init__(self, pd_maxdata, ed_maxdata, pd_feature_list=None,
                  ed_feature_list=None, numparticle=6, **kwargs):
@@ -37,13 +36,16 @@ class Discriminator(tf.keras.Model):
         return data
 
 
-class Downstream(tf.keras.Model):
+class TPCCDiscriminator(tf.keras.Model):
 
-    def __init__(self, **kwargs):
+    def __init__(self, numparticle=6, **kwargs):
         super().__init__(**kwargs)
 
-        self.nfilter = 64
+        self._numparticle = numparticle
 
+        self.labelmerger = LabelMerger(self._numparticle)
+
+        self.nfilter = 64
         self.layer1 = tf.keras.layers.Conv2D(self.nfilter, (1,10), padding="same", activation=tf.nn.tanh)
 
         self.layer2 = tf.keras.layers.Conv2D(self.nfilter, (1,10), strides=(1,2), padding="same", activation=tf.nn.tanh)
@@ -61,6 +63,12 @@ class Downstream(tf.keras.Model):
 
     @tf.function
     def call(self, inputs, training=False):
+        label = inputs[0]
+        data = inputs[1]
+
+        labeltensor= self.labelmerger(label)
+        # TODO add dense layers for shape adjustment to data here
+
         tensor = tf.expand_dims(inputs, 1)
         tensor = self.layer1(tensor)
         tensor = self.layer2(tensor)
@@ -80,7 +88,7 @@ class Downstream(tf.keras.Model):
 
 class WassersteinDistance(tf.keras.Model):
 
-    def __init__(self, discriminator : Discriminator, **kwargs):
+    def __init__(self, discriminator : BaseDiscriminator, **kwargs):
         super().__init__(**kwargs)
 
         self.discriminator = discriminator
@@ -99,7 +107,7 @@ class WassersteinDistance(tf.keras.Model):
 
 class GradientPenalty(tf.keras.Model):
 
-    def __init__(self, discriminator : Discriminator, **kwargs):
+    def __init__(self, discriminator : BaseDiscriminator, **kwargs):
         super().__init__(**kwargs)
 
         self.discriminator = discriminator

@@ -82,14 +82,18 @@ for batch in ds.take(1):
 # tests
 import src.models.gan as gan
 
-gen = gan.Generator(depthlen, pd_maxdata, ed_maxdata)
-dis = gan.Discriminator(pd_maxdata, ed_maxdata)
+gen = gan.BaseGenerator(depthlen, pd_maxdata, ed_maxdata)
+dis = gan.BaseDiscriminator(pd_maxdata, ed_maxdata)
 
-for label,data,noise in ds.take(1):
-    pd = data[0]
-    ed = data[1]
+@tf.function
+def testfunc(gen, dis):
+    for label,data,noise in ds:
+        fake = gen((label,noise,))
+        out2 = dis((label,fake,data,))
+        out3 = dis((label,data,data,))
 
-    out1 = gen((label,noise,))
-    out2 = dis((label,out1,data,))
-    out3 = dis((label,data,data,))
+
+start = timeit.default_timer()
+testfunc(gen, dis)
+end = timeit.default_timer()
 
