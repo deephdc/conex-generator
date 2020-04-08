@@ -1,13 +1,12 @@
 import tensorflow as tf
 import numpy as np
 
-import src.models.gan as gan
 import src.models.gan.utils as utils
 
 
 class GradientPenalty(tf.keras.Model):
 
-    def __init__(self, discriminator : gan.BaseDiscriminator, **kwargs):
+    def __init__(self, discriminator, **kwargs):
         super().__init__(**kwargs)
 
         self.discriminator = discriminator
@@ -25,7 +24,7 @@ class GradientPenalty(tf.keras.Model):
 
         self.lipschitz_constant = tf.sqrt(self.ndim[0] + self.ndim[1])
 
-        super().build(input_shape)
+        #super().build(input_shape)
 
     @tf.function
     def call(self, inputs, training=False):
@@ -34,8 +33,8 @@ class GradientPenalty(tf.keras.Model):
         fake = inputs[2]
 
         # superimpose pd and ed
-        sup0 = self.superposition0(real[0], fake[0]) # particle distribution
-        sup1 = self.superposition1(real[1], fake[1]) # energy deposit
+        sup0 = self.superposition0((real[0], fake[0],)) # particle distribution
+        sup1 = self.superposition1((real[1], fake[1],)) # energy deposit
 
         # discriminator forward map
         tensor = self.discriminator((label, (sup0, sup1), real,))
@@ -52,8 +51,8 @@ class GradientPenalty(tf.keras.Model):
         not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
         not_nan1 = tf.math.logical_not(tf.math.is_nan(real[1]))
 
-        dims0 = tf.math.count_nonzero(not_nan0, axis=[1,2])
-        dims1 = tf.math.count_nonzero(not_nan1, axis=[1,2])
+        dims0 = tf.math.count_nonzero(not_nan0, axis=[1,2], dtype=tf.float32)
+        dims1 = tf.math.count_nonzero(not_nan1, axis=[1,2], dtype=tf.float32)
 
         lipschitz_dynamic = tf.sqrt(dims0 + dims1)
 

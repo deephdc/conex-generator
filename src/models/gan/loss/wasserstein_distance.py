@@ -1,11 +1,9 @@
 import tensorflow as tf
 
-import src.models.gan as gan
-
 
 class WassersteinDistance(tf.keras.Model):
 
-    def __init__(self, discriminator : gan.BaseDiscriminator, **kwargs):
+    def __init__(self, discriminator, **kwargs):
         super().__init__(**kwargs)
         self.discriminator = discriminator
 

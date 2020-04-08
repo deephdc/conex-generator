@@ -92,16 +92,17 @@ import src.models.gan as gan
 
 gen = gan.BaseGenerator(depthlen, pd_maxdata, ed_maxdata)
 dis = gan.BaseDiscriminator(pd_maxdata, ed_maxdata)
+wd = gan.loss.WassersteinDistance(dis)
+gp = gan.loss.GradientPenalty(dis)
 
 @tf.function
-def testfunc(gen, dis):
-    for label,data,noise in ds:
+def testfunc(dataset, gen, dis, wd, gp):
+    for label,real,noise in dataset:
         fake = gen((label,noise,))
-        out2 = dis((label,fake,data,))
-        out3 = dis((label,data,data,))
-
+        out1 = wd((label,real,fake))
+        out2 = gp((label,real,fake))
 
 start = timeit.default_timer()
-testfunc(gen, dis)
+retval = testfunc(ds, gen, dis, wd, gp)
 end = timeit.default_timer()
 
