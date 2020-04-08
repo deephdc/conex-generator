@@ -12,7 +12,7 @@ import typing
 # script input
 run = "run02"
 cache_path = os.path.join("/home/tmp/koepke/cache", run)
-epochs = 1
+epochs = 4000
 
 # get data
 data = src.data.processed.load_data(run)
@@ -105,9 +105,10 @@ dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
 
 # initialize and build once
 for label, real, noise in ds.take(1):
-    fake = gen((label, *noise,))
-    out1 = wd((label, *real, *fake,))
-    out2 = gp((label, *real, *fake,))
+    out1 = gen((label, *noise,))
+    out2 = dis((label, *real, *real,))
+    out3 = wd((label, *real, *out1,))
+    out4 = gp((label, *real, *out1,))
 
 # train function
 def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
@@ -133,12 +134,19 @@ def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
 
 print("training ...")
 start = timeit.default_timer()
-train(ds.take(1), gen, dis, wd, gp, gopt, dopt, epochs)
+train(ds, gen, dis, wd, gp, gopt, dopt, epochs)
 end = timeit.default_timer()
 print("training time", end-start)
 
-#for x,y,z in ds.take(1):
-#    test = generator.predict((x,y,))
-#generator.save("./output/old")
-#print("done ...")
+# save model
+print("saving ...")
+savepath = os.path.join(src.models.get_path(), "gan", run)
+
+for label, real, noise in ds.take(1):
+    gen.predict((label, *noise,))
+    dis.predict((label, *real, *real,))
+
+gen.save(os.path.join(savepath, "generator"))
+dis.save(os.path.join(savepath, "discriminator"))
+print("done ...")
 
