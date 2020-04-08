@@ -9,8 +9,12 @@ import numpy as np
 import timeit
 import typing
 
+# data selection
+run = "run02"
+cache_path = os.path.join("/home/tmp/koepke/cache", run)
+
 # get data
-data = src.data.processed.load_data("run02")
+data = src.data.processed.load_data(run)
 pd : tf.data.Dataset = data[0]
 ed : tf.data.Dataset = data[1]
 label : tf.data.Dataset = data[2]
@@ -36,7 +40,7 @@ pd = pd.batch(prefetchlen//2) \
         .map(cast_to_float32,
              num_parallel_calls=tf.data.experimental.AUTOTUNE) \
         .unbatch()
-pd = src.data.cache_dataset(pd, "pd")
+pd = src.data.cache_dataset(pd, "pd", basepath=cache_path)
 pd = pd.prefetch(prefetchlen)
 
 ed = ed.prefetch(prefetchlen)
@@ -44,7 +48,7 @@ ed = ed.batch(prefetchlen//2) \
         .map(cast_to_float32,
              num_parallel_calls=tf.data.experimental.AUTOTUNE) \
         .unbatch()
-ed = src.data.cache_dataset(ed, "ed")
+ed = src.data.cache_dataset(ed, "ed", basepath=cache_path)
 ed = ed.prefetch(prefetchlen)
 
 label = label.prefetch(prefetchlen)
@@ -52,7 +56,7 @@ label = label.batch(prefetchlen//2) \
         .map(cast_to_float32,
              num_parallel_calls=tf.data.experimental.AUTOTUNE) \
         .unbatch()
-label = src.data.cache_dataset(label, "label")
+label = src.data.cache_dataset(label, "label", basepath=cache_path)
 label = label.prefetch(prefetchlen)
 
 noise1 = src.data.random.uniform_dataset((100,))
