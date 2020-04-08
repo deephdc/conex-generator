@@ -22,8 +22,9 @@ def prepare_cache(name, basepath="/home/tmp/koepke/cache", reuse=True):
     return path
 
 
-def cache_dataset(dataset, name, reuse=True, cachenow=True):
-    path = prepare_cache(name, reuse=reuse)
+def cache_dataset(dataset, name, basepath="/home/tmp/koepke/cache",
+                  reuse=True, cachenow=True):
+    path = prepare_cache(name, basepath=basepath, reuse=reuse)
     files = glob.glob(path + "*")
 
     ds = dataset.cache(path)
