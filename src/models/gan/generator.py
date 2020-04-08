@@ -1,7 +1,6 @@
 import tensorflow as tf
 
 import src.models.gan.generator_collection as gencol
-import src.models.gan.discriminator_collection as discol 
 import src.models.gan.utils as utils
 
 

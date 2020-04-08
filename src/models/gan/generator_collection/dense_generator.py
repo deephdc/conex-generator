@@ -1,9 +1,10 @@
 import tensorflow as tf
+import tensorflow.keras.layers as layers
 
 import src.models.gan.utils as utils
 
 
-class DenseGenerator(tf.keras.Model):
+class DenseGenerator(tf.keras.layers.Layer):
 
     def __init__(self, depthlen=288, gen_features=8, numparticle=6, **kwargs):
         super().__init__(**kwargs)
@@ -15,10 +16,10 @@ class DenseGenerator(tf.keras.Model):
 
         self.activation = tf.keras.activations.tanh
 
-        self.layer1 = tf.keras.layers.Dense(512, activation=self.activation)
-        self.layer2 = tf.keras.layers.Dense(1024, activation=self.activation)
-        self.layer3 = tf.keras.layers.Dense(self.depthlen * self.gen_features,
-                                            activation=tf.keras.activations.sigmoid)
+        self.layer1 = layers.Dense(512, activation=self.activation)
+        self.layer2 = layers.Dense(1024, activation=self.activation)
+        self.layer3 = layers.Dense(self.depthlen * self.gen_features,
+                                   activation=tf.keras.activations.sigmoid)
 
     @tf.function
     def call(self, inputs, training=False):

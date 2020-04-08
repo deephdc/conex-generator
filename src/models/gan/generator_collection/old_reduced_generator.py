@@ -5,7 +5,7 @@ import numpy as np
 import src.models.gan.utils as utils
 
 
-class OldReducedGenerator(tf.keras.Model):
+class OldReducedGenerator(tf.keras.layers.Layer):
 
     def __init__(self, depthlen=288, gen_features=8, numparticle=6, **kwargs):
         super().__init__(**kwargs)
