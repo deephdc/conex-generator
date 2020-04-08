@@ -87,7 +87,7 @@ ed_maxdata = ed_maxdata.numpy()
 for batch in ds.take(1):
     depthlen  = batch[1][0].shape[1]
 
-# tests
+# create model
 import src.models.gan as gan
 
 gen = gan.BaseGenerator(depthlen, pd_maxdata, ed_maxdata)
@@ -95,14 +95,46 @@ dis = gan.BaseDiscriminator(pd_maxdata, ed_maxdata)
 wd = gan.loss.WassersteinDistance(dis)
 gp = gan.loss.GradientPenalty(dis)
 
-@tf.function
-def testfunc(dataset, gen, dis, wd, gp):
-    for label,real,noise in dataset:
-        fake = gen((label,noise,))
-        out1 = wd((label,real,fake))
-        out2 = gp((label,real,fake))
+gopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
+dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
 
+# initialize and build once
+for label, real, noise in ds.take(1):
+    fake = gen((label, noise,))
+    out1 = wd((label, real, fake,))
+    out2 = gp((label, real, fake,))
+
+# train function
+@tf.function
+def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
+    dataset = dataset.repeat(epochs)
+    for ii, (label, real, noise) in dataset.enumerate():
+        if ii % 5 == 4:
+            with tf.GradientTape(watch_accessed_variables=False) as tape:
+                tape.watch(gen.trainable_weights)
+                fake = gen((label, noise,))
+                distance = wd((label, real, fake,))
+                loss = distance
+            grads = tape.gradient(loss, gen.trainable_weights)
+            dopt.apply_gradients(zip(grads, gen.trainable_weights))
+        else:
+            with tf.GradientTape(watch_accessed_variables=False) as tape:
+                tape.watch(dis.trainable_weights)
+                fake = gen((label, noise,))
+                distance = wd((label, real, fake,))
+                penalty = gp((label, real, fake,))
+                loss = - distance + penalty
+            grads = tape.gradient(loss, dis.trainable_weights)
+            dopt.apply_gradients(zip(grads, dis.trainable_weights))
+
+print("training ...")
 start = timeit.default_timer()
-retval = testfunc(ds, gen, dis, wd, gp)
+train(ds.take(1), gen, dis, wd, gp, gopt, dopt, 2)
 end = timeit.default_timer()
+print("training time", end-start)
+
+#for x,y,z in ds.take(1):
+#    test = generator.predict((x,y,))
+#generator.save("./output/old")
+#print("done ...")
 
