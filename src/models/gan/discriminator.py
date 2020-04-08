@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-import src.models.gan.discriminator_collection as discol
-import src.models.gan.utils as utils
+from src.models.gan import discriminator_collection as discol
+from src.models.gan import utils
 
 
 class BaseDiscriminator(tf.keras.Model):

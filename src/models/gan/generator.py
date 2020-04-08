@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-import src.models.gan.generator_collection as gencol
-import src.models.gan.utils as utils
+from src.models.gan import generator_collection as gencol
+from src.models.gan import utils
 
 
 def get_maxdepthlen():

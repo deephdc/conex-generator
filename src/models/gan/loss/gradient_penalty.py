@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-import src.models.gan.utils as utils
+from src.models.gan import utils
 
 
 class GradientPenalty(tf.keras.Model):

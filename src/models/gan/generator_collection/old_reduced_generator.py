@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.keras.layers as layers
 import numpy as np
 
-import src.models.gan.utils as utils
+from src.models.gan import utils
 
 
 class OldReducedGenerator(tf.keras.layers.Layer):

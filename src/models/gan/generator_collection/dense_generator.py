@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tensorflow.keras.layers as layers
 
-import src.models.gan.utils as utils
+from src.models.gan import utils
 
 
 class DenseGenerator(tf.keras.layers.Layer):
