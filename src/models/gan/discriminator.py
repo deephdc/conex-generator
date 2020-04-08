@@ -24,8 +24,8 @@ class BaseDiscriminator(tf.keras.Model):
     @tf.function
     def call(self, inputs, training=False):
         label = inputs[0]
-        data = inputs[1]
-        mask = inputs[2]
+        data = inputs[1:3]
+        mask = inputs[3:]
 
         data = self.normalizer(data)
         data = self.datamerger(data)

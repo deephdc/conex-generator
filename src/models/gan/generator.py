@@ -39,7 +39,7 @@ class BaseGenerator(tf.keras.Model):
     @tf.function
     def call(self, inputs, training=False):
         label = inputs[0]
-        noise = inputs[1]
+        noise = inputs[1:]
 
         # run different generators
         output1 = self.dense_generator((label,noise,))

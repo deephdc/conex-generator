@@ -9,9 +9,10 @@ import numpy as np
 import timeit
 import typing
 
-# data selection
+# script input
 run = "run02"
 cache_path = os.path.join("/home/tmp/koepke/cache", run)
+epochs = 1
 
 # get data
 data = src.data.processed.load_data(run)
@@ -104,36 +105,35 @@ dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
 
 # initialize and build once
 for label, real, noise in ds.take(1):
-    fake = gen((label, noise,))
-    out1 = wd((label, real, fake,))
-    out2 = gp((label, real, fake,))
+    fake = gen((label, *noise,))
+    out1 = wd((label, *real, *fake,))
+    out2 = gp((label, *real, *fake,))
 
 # train function
-@tf.function
 def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
     dataset = dataset.repeat(epochs)
     for ii, (label, real, noise) in dataset.enumerate():
         if ii % 5 == 4:
             with tf.GradientTape(watch_accessed_variables=False) as tape:
                 tape.watch(gen.trainable_weights)
-                fake = gen((label, noise,))
-                distance = wd((label, real, fake,))
+                fake = gen((label, *noise,))
+                distance = wd((label, *real, *fake,))
                 loss = distance
             grads = tape.gradient(loss, gen.trainable_weights)
             dopt.apply_gradients(zip(grads, gen.trainable_weights))
         else:
             with tf.GradientTape(watch_accessed_variables=False) as tape:
                 tape.watch(dis.trainable_weights)
-                fake = gen((label, noise,))
-                distance = wd((label, real, fake,))
-                penalty = gp((label, real, fake,))
+                fake = gen((label, *noise,))
+                distance = wd((label, *real, *fake,))
+                penalty = gp((label, *real, *fake,))
                 loss = - distance + penalty
             grads = tape.gradient(loss, dis.trainable_weights)
             dopt.apply_gradients(zip(grads, dis.trainable_weights))
 
 print("training ...")
 start = timeit.default_timer()
-train(ds.take(1), gen, dis, wd, gp, gopt, dopt, 2)
+train(ds.take(1), gen, dis, wd, gp, gopt, dopt, epochs)
 end = timeit.default_timer()
 print("training time", end-start)
 

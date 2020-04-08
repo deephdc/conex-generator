@@ -16,9 +16,9 @@ class GradientPenalty(tf.keras.Model):
 
     def build(self, input_shape):
         self.ndim = np.array([
-            input_shape[1][0][1] * input_shape[1][0][2], # particle distribution
-            input_shape[1][1][1] * input_shape[1][1][2], # energy deposit
-            input_shape[0][1],                           # label
+            input_shape[1][1] * input_shape[1][2], # particle distribution
+            input_shape[2][1] * input_shape[2][2], # energy deposit
+            input_shape[0][1],                     # label
             ],
             dtype = np.float32)
 
@@ -29,15 +29,15 @@ class GradientPenalty(tf.keras.Model):
     @tf.function
     def call(self, inputs, training=False):
         label = inputs[0]
-        real = inputs[1]
-        fake = inputs[2]
+        real = inputs[1:3]
+        fake = inputs[3:]
 
         # superimpose pd and ed
         sup0 = self.superposition0((real[0], fake[0],)) # particle distribution
         sup1 = self.superposition1((real[1], fake[1],)) # energy deposit
 
         # discriminator forward map
-        tensor = self.discriminator((label, (sup0, sup1), real,))
+        tensor = self.discriminator((label, *(sup0, sup1), *real,))
 
         # calculate l2 norm of gradient
         gradients = tf.gradients(tensor, [sup0, sup1],
