@@ -1,11 +1,7 @@
 import tensorflow as tf
-import numpy as np
 
-from .utils import DataMerger
-from .utils import DataNormalizer
-from .utils import LabelMerger
-from .utils import UniformSuperposition
-from .utils import DataMaskStandardizer
+import src.models.gan.discriminator_collection as discol
+import src.models.gan.utils as utils
 
 
 class BaseDiscriminator(tf.keras.Model):
@@ -18,9 +14,12 @@ class BaseDiscriminator(tf.keras.Model):
         self.ed_maxdata = ed_maxdata
         self._numparticle = numparticle
 
-        self.normalizer = DataNormalizer(self.pd_maxdata, self.ed_maxdata)
-        self.datamerger = DataMerger(pd_feature_list, ed_feature_list)
-        self.standardizer = DataMaskStandardizer()
+        self.normalizer = utils.DataNormalizer(self.pd_maxdata, self.ed_maxdata)
+        self.datamerger = utils.DataMerger(pd_feature_list, ed_feature_list)
+        self.standardizer = utils.DataMaskStandardizer()
+
+        self.dense_discriminator = discol.DenseDiscriminator(self._numparticle)
+        self.oldr_discriminator = discol.OldReducedDiscriminator(self._numparticle)
     
     @tf.function
     def call(self, inputs, training=False):
@@ -33,57 +32,15 @@ class BaseDiscriminator(tf.keras.Model):
         mask = self.datamerger(mask)
         data = self.standardizer((data, mask,))
 
-        return data
 
+        # run different generators
+        output1 = self.dense_discriminator((label, data,))
+        output2 = self.oldr_discriminator((label, data,))
 
-class TPCCDiscriminator(tf.keras.Model):
-
-    def __init__(self, numparticle=6, **kwargs):
-        super().__init__(**kwargs)
-
-        self._numparticle = numparticle
-
-        self.labelmerger = LabelMerger(self._numparticle)
-
-        self.nfilter = 64
-        self.layer1 = tf.keras.layers.Conv2D(self.nfilter, (1,10), padding="same", activation=tf.nn.tanh)
-
-        self.layer2 = tf.keras.layers.Conv2D(self.nfilter, (1,10), strides=(1,2), padding="same", activation=tf.nn.tanh)
-        self.layer2b = tf.keras.layers.Conv2D(self.nfilter, (1,10), strides=(1,1), padding="same", activation=tf.nn.tanh)
-
-        self.layer3 = tf.keras.layers.Conv2D(self.nfilter, (1,6), strides=(1,2), padding="same", activation=tf.nn.tanh)
-        self.layer3b = tf.keras.layers.Conv2D(self.nfilter, (1,6), strides=(1,1), padding="same", activation=tf.nn.tanh)
-
-        self.layer4 = tf.keras.layers.Conv2D(self.nfilter, (1,3), strides=(1,2), padding="same", activation=tf.nn.tanh)
-        self.layer4b = tf.keras.layers.Conv2D(self.nfilter, (1,3), strides=(1,1), padding="same", activation=tf.nn.tanh)
-
-        self.layer5 = tf.keras.layers.Flatten()
-        self.layer6 = tf.keras.layers.Dense(256, activation=tf.nn.tanh)
-        self.layer6b = tf.keras.layers.Dense(1)
-
-    @tf.function
-    def call(self, inputs, training=False):
-        label = inputs[0]
-        data = inputs[1]
-
-        labeltensor= self.labelmerger(label)
-        # TODO add dense layers for shape adjustment to data here
-
-        tensor = tf.expand_dims(inputs, 1)
-        tensor = self.layer1(tensor)
-        tensor = self.layer2(tensor)
-        tensor = self.layer2b(tensor)
-        tensor = self.layer3(tensor)
-        tensor = self.layer3b(tensor)
-        tensor = self.layer4(tensor)
-        tensor = self.layer4b(tensor)
-        tensor = self.layer5(tensor)
-        tensor = self.layer6(tensor)
-        tensor = self.layer6b(tensor)
+        # merge outputs
+        tensor = output1 + output2
 
         return tensor
-
-
 
 
 class WassersteinDistance(tf.keras.Model):
