@@ -24,17 +24,30 @@ metadata : typing.Dict = data[3]
 # parse metadata
 numdata = metadata["length"]
 
+pd_maxdata = np.array(metadata["particle_distribution"]["max_data"],
+                      dtype=np.float32)
+ed_maxdata = np.array(metadata["energy_deposit"]["max_data"],
+                      dtype=np.float32)
+
 pd_depth = metadata["particle_distribution"]["depth"]
 pd_depthlen = len(pd_depth)
-
 ed_depth = metadata["energy_deposit"]["depth"]
 ed_depthlen = len(ed_depth)
+assert pd_depthlen == ed_depthlen
+depthlen = pd_depthlen
 
-prefetchlen = int(3*1024*1024*1024 / (275 * 9 * 8)) # max 3 GB
+pd_mindepthlen = metadata["particle_distribution"]["min_depthlen"]
+pd_mindepth = pd_depth[pd_mindepthlen-1]
+ed_mindepthlen = metadata["energy_deposit"]["min_depthlen"]
+ed_mindepth = ed_depth[ed_mindepthlen-1]
+assert pd_mindepthlen == ed_mindepthlen
+mindepthlen = pd_mindepthlen
 
 # prepare data
 def cast_to_float32(x):
     return tf.cast(x, tf.float32)
+
+prefetchlen = int(3*1024*1024*1024 / (275 * 9 * 8)) # max 3 GB
 
 pd = pd.prefetch(prefetchlen)
 pd = pd.batch(prefetchlen//2) \
@@ -68,29 +81,6 @@ ds = tf.data.Dataset.zip((
     (noise1,)
 ))
 ds : tf.data.Dataset = ds.shuffle(100000).batch(1024).prefetch(5)
-
-# get data info: maximum estimate, shape
-@tf.function
-def get_maxdata(dataset):
-    pd_maxdata = tf.zeros(8, dtype=tf.float32)
-    ed_maxdata = tf.zeros(9, dtype=tf.float32)
-    for batch in dataset:
-        # pd
-        batchmax = tf.math.reduce_max(tf.abs(batch[1][0]), axis=(0,1))
-        pd_maxdata = tf.where(batchmax > pd_maxdata, batchmax, pd_maxdata)
-
-        # ed
-        batchmax = tf.math.reduce_max(tf.abs(batch[1][1]), axis=(0,1))
-        ed_maxdata = tf.where(batchmax > ed_maxdata, batchmax, ed_maxdata)
-
-    return (pd_maxdata, ed_maxdata)
-pd_maxdata, ed_maxdata = get_maxdata(ds)
-
-pd_maxdata = pd_maxdata.numpy()
-ed_maxdata = ed_maxdata.numpy()
-
-for batch in ds.take(1):
-    depthlen  = batch[1][0].shape[1]
 
 # create model
 import src.models.gan as gan
