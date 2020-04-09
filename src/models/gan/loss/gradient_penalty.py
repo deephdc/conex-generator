@@ -33,11 +33,11 @@ class GradientPenalty(tf.keras.Model):
         fake = inputs[3:]
 
         # superimpose pd and ed
-        sup0 = self.superposition0((real[0], fake[0],)) # particle distribution
-        sup1 = self.superposition1((real[1], fake[1],)) # energy deposit
+        sup0 = self.superposition0([real[0], fake[0],]) # particle distribution
+        sup1 = self.superposition1([real[1], fake[1],]) # energy deposit
 
         # discriminator forward map
-        tensor = self.discriminator((label, *(sup0, sup1), *real,))
+        tensor = self.discriminator([label, *[sup0, sup1], *real,])
 
         # calculate l2 norm of gradient
         gradients = tf.gradients(tensor, [sup0, sup1],

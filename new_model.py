@@ -105,10 +105,10 @@ dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
 
 # initialize and build once
 for label, real, noise in ds.take(1):
-    out1 = gen((label, *noise,))
-    out2 = dis((label, *real, *real,))
-    out3 = wd((label, *real, *out1,))
-    out4 = gp((label, *real, *out1,))
+    out1 = gen([label, *noise,])
+    out2 = dis([label, *real, *real,])
+    out3 = wd([label, *real, *out1,])
+    out4 = gp([label, *real, *out1,])
 
 # train function
 def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
@@ -117,17 +117,17 @@ def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
         if ii % 5 == 4:
             with tf.GradientTape(watch_accessed_variables=False) as tape:
                 tape.watch(gen.trainable_weights)
-                fake = gen((label, *noise,))
-                distance = wd((label, *real, *fake,))
+                fake = gen([label, *noise,])
+                distance = wd([label, *real, *fake,])
                 loss = distance
             grads = tape.gradient(loss, gen.trainable_weights)
             dopt.apply_gradients(zip(grads, gen.trainable_weights))
         else:
             with tf.GradientTape(watch_accessed_variables=False) as tape:
                 tape.watch(dis.trainable_weights)
-                fake = gen((label, *noise,))
-                distance = wd((label, *real, *fake,))
-                penalty = gp((label, *real, *fake,))
+                fake = gen([label, *noise,])
+                distance = wd([label, *real, *fake,])
+                penalty = gp([label, *real, *fake,])
                 loss = - distance + penalty
             grads = tape.gradient(loss, dis.trainable_weights)
             dopt.apply_gradients(zip(grads, dis.trainable_weights))
@@ -143,8 +143,8 @@ print("saving ...")
 savepath = os.path.join(src.models.get_path(), "gan", run)
 
 for label, real, noise in ds.take(1):
-    gen.predict((label, *noise,))
-    dis.predict((label, *real, *real,))
+    gen.predict([label, *noise,])
+    dis.predict([label, *real, *real,])
 
 gen.save(os.path.join(savepath, "generator"))
 dis.save(os.path.join(savepath, "discriminator"))

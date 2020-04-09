@@ -20,7 +20,7 @@ class DataNormalizer(tf.keras.layers.Layer):
         pd = pd / pd_maxdata
         ed = ed / ed_maxdata
 
-        return (pd, ed)
+        return [pd, ed]
 
 
 class DataDenormalizer(tf.keras.layers.Layer):
@@ -42,5 +42,5 @@ class DataDenormalizer(tf.keras.layers.Layer):
         pd = pd * pd_maxdata
         ed = ed * ed_maxdata
 
-        return (pd, ed)
+        return [pd, ed]
 

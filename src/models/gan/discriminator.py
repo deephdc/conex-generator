@@ -30,12 +30,12 @@ class BaseDiscriminator(tf.keras.Model):
         data = self.normalizer(data)
         data = self.datamerger(data)
         mask = self.datamerger(mask)
-        data = self.standardizer((data, mask,))
+        data = self.standardizer([data, mask,])
 
 
         # run different generators
-        output1 = self.dense_discriminator((label, data,))
-        output2 = self.oldr_discriminator((label, data,))
+        output1 = self.dense_discriminator([label, data,])
+        output2 = self.oldr_discriminator([label, data,])
 
         # merge outputs
         tensor = output1 + output2

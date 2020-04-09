@@ -13,8 +13,8 @@ class WassersteinDistance(tf.keras.Model):
         real = inputs[1:3]
         fake = inputs[3:]
 
-        realtensor = self.discriminator((label, *real, *real,))
-        faketensor = self.discriminator((label, *fake, *real,))
+        realtensor = self.discriminator([label, *real, *real,])
+        faketensor = self.discriminator([label, *fake, *real,])
 
         realtensor = tf.math.reduce_mean(realtensor)
         faketensor = tf.math.reduce_mean(faketensor)

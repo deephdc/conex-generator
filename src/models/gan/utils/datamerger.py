@@ -110,5 +110,5 @@ class DataSplitter(tf.keras.layers.Layer):
         pd = tf.gather(pd_temp, self._pd_gatherindex, axis=2)
         ed = tf.gather(ed_temp, self._ed_gatherindex, axis=2)
 
-        return (pd, ed)
+        return [pd, ed]
 

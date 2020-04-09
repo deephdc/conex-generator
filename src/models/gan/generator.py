@@ -42,16 +42,16 @@ class BaseGenerator(tf.keras.Model):
         noise = inputs[1:]
 
         # run different generators
-        output1 = self.dense_generator((label,noise,))
-        output2 = self.oldr_generator((label,noise,))
+        output1 = self.dense_generator([label,noise,])
+        output2 = self.oldr_generator([label,noise,])
 
         # merge outputs
         tensor = output1 + output2
 
         # format data
         tensor = tensor[:,0:self.depthlen,:]
-        tensor = self.datasplitter(tensor)
-        tensor = self.denormalizer(tensor)
+        data = self.datasplitter(tensor)
+        data = self.denormalizer(data)
 
-        return tensor
+        return data
 
