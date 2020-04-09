@@ -67,11 +67,10 @@ def merge_run(run, expand_depth, overwrite=False):
     filepath = os.path.join(outpath, "label.npy")
     log.info("writing %s.npy to disk", "label")
     np.save(filepath, label, fix_imports=False)
-    numdata = len(label)
     del(label)
 
     # write metadata
-    meta = create_metadata(metadata, run, numdata, expand_depth)
+    meta = create_metadata(metadata, run, expand_depth)
     meta["particle_distribution"]["depth"] = depth_pd.tolist()
     meta["energy_deposit"]["depth"] = depth_ed.tolist()
     filepath = os.path.join(outpath, "metadata.json")
@@ -104,7 +103,6 @@ def merge_data(metadata, feature, depthlen, runpath):
     return data
 
 
-
 def merge_label(metadata, runpath):
     log.info("merging numpy files for label")
 
@@ -128,15 +126,36 @@ def merge_label(metadata, runpath):
     return data
 
 
-
-def create_metadata(metadata, run, numdata, expand_depth):
+def create_metadata(metadata, run, expand_depth):
     log.info("creating metadata")
 
     jsonfiles = []
     expand_depths = []
+
+    pd_max_data = []
+    ed_max_data = []
+
+    pd_min_depthlen = []
+    ed_min_depthlen = []
+
+    numdata = 0
     for value in metadata:
         jsonfiles.append(value["json_file"])
         expand_depths.append(value["expand_depth"])
+
+        pd_max_data.append(value["particle_distribution"]["max_data"])
+        ed_max_data.append(value["energy_deposit"]["max_data"])
+
+        pd_min_depthlen.append(value["particle_distribution"]["min_depthlen"])
+        ed_min_depthlen.append(value["energy_deposit"]["min_depthlen"])
+
+        numdata += value["length"]
+
+    pd_max_data = np.max(pd_max_data, axis=0).tolist()
+    ed_max_data = np.max(ed_max_data, axis=0).tolist()
+
+    pd_min_depthlen = np.min(pd_min_depthlen)
+    ed_min_depthlen = np.min(ed_min_depthlen)
 
     meta = {
             "json_files": list(jsonfiles),
@@ -150,8 +169,13 @@ def create_metadata(metadata, run, numdata, expand_depth):
             "energy_deposit": dict(metadata[0]["energy_deposit"]),
             }
 
-    return meta
+    meta["particle_distribution"]["max_data"] = pd_max_data
+    meta["energy_deposit"]["max_data"] = ed_max_data
 
+    meta["particle_distribution"]["min_depthlen"] = pd_min_depthlen
+    meta["energy_deposit"]["min_depthlen"] = ed_min_depthlen
+
+    return meta
 
 
 def get_depth_features(metadata, expand_depth):

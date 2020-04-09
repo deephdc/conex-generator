@@ -14,6 +14,7 @@ from ..processed import get_path as get_processed_path
 processedpath = get_processed_path()
 
 from .merge_run import get_depth_features
+from .merge_run import create_metadata
 
 
 def align_run(run, expand_depth, overwrite=False):
@@ -109,30 +110,4 @@ def copy_label(meta, runpath, outpath):
     filepath = os.path.join(runpath, "label" + "_" + timestamp + ".npy")
     copypath = os.path.join(outpath, "label" + "_" + timestamp + ".npy")
     shutil.copyfile(filepath, copypath)
-
-
-def create_metadata(metadata, run, expand_depth):
-    log.info("creating metadata")
-
-    jsonfiles = []
-    expand_depths = []
-    numdata = 0
-    for value in metadata:
-        jsonfiles.append(value["json_file"])
-        expand_depths.append(value["expand_depth"])
-        numdata += value["length"]
-
-    meta = {
-            "json_files": list(jsonfiles),
-            "run": run,
-            "expand_depth": expand_depth,
-            "expand_depth_list": list(expand_depths),
-            "length": numdata,
-
-            "label": dict(metadata[0]["label"]),
-            "particle_distribution": dict(metadata[0]["particle_distribution"]),
-            "energy_deposit": dict(metadata[0]["energy_deposit"]),
-            }
-
-    return meta
 

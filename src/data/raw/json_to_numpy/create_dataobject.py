@@ -169,6 +169,8 @@ def create_dataobject(filename, run, expand_depth):
                 "data": data_pd,
                 "layout": numpy_data_layout["particle_distribution"],
                 "number_of_features": data_pd.shape[2],
+                "max_data": np.nanmax(data_pd, axis=(0,1)).tolist(),
+                "min_depthlen": np.min(temp[0,0,:]),
                 },
 
             "energy_deposit": {
@@ -176,6 +178,8 @@ def create_dataobject(filename, run, expand_depth):
                 "data": data_ed,
                 "layout": numpy_data_layout["energy_deposit"],
                 "number_of_features": data_ed.shape[2],
+                "max_data": np.nanmax(data_ed, axis=(0,1)).tolist(),
+                "min_depthlen": np.min(temp[1,0,:]),
                 },
             }
 
