@@ -24,7 +24,7 @@ class GradientPenalty(tf.keras.Model):
 
         self.lipschitz_constant = tf.sqrt(self.ndim[0] + self.ndim[1])
 
-        #super().build(input_shape)
+        super().build(input_shape)
 
     @tf.function
     def call(self, inputs, training=False):
