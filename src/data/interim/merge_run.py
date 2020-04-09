@@ -154,8 +154,8 @@ def create_metadata(metadata, run, expand_depth):
     pd_max_data = np.max(pd_max_data, axis=0).tolist()
     ed_max_data = np.max(ed_max_data, axis=0).tolist()
 
-    pd_min_depthlen = np.min(pd_min_depthlen)
-    ed_min_depthlen = np.min(ed_min_depthlen)
+    pd_min_depthlen = int(np.min(pd_min_depthlen))
+    ed_min_depthlen = int(np.min(ed_min_depthlen))
 
     meta = {
             "json_files": list(jsonfiles),
