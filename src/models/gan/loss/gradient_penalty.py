@@ -64,7 +64,6 @@ class GradientPenalty(tf.keras.Model):
         gradsum_ed = tf.math.reduce_sum(tf.square(grads_scale[1]), axis=[1,2])
 
         gradnorm = tf.sqrt(gradsum_pd + gradsum_ed + 1e-6)
-        tf.print(gradnorm)
 
         # calculate dynamic lipschitz constant based actual input dimension
         not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
