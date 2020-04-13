@@ -6,13 +6,26 @@ from src.models.gan import utils
 
 class GradientPenalty(tf.keras.Model):
 
-    def __init__(self, discriminator, **kwargs):
+    def __init__(self, discriminator, pd_maxdata=None, ed_maxdata=None, **kwargs):
         super().__init__(**kwargs)
 
         self.discriminator = discriminator
 
-        self.superposition0 = utils.UniformSuperposition()
-        self.superposition1 = utils.UniformSuperposition()
+        if pd_maxdata is None:
+            self.pd_maxdata = self.discriminator.pd_maxdata
+        else:
+            self.pd_maxdata = pd_maxdata
+
+        if ed_maxdata is None:
+            self.ed_maxdata = self.discriminator.ed_maxdata
+        else:
+            self.ed_maxdata = ed_maxdata
+
+        self.denormalizer = utils.DataDenormalizer(self.pd_maxdata,
+                                                   self.ed_maxdata)
+
+        self.superposition_pd = utils.UniformSuperposition()
+        self.superposition_ed = utils.UniformSuperposition()
 
     def build(self, input_shape):
         self.ndim = np.array([
@@ -32,20 +45,26 @@ class GradientPenalty(tf.keras.Model):
         real = inputs[1:3]
         fake = inputs[3:]
 
-        # superimpose pd and ed
-        sup0 = self.superposition0([real[0], fake[0],]) # particle distribution
-        sup1 = self.superposition1([real[1], fake[1],]) # energy deposit
+        # superimpose particle distribution and energy deposit
+        sup_pd = self.superposition_pd([real[0], fake[0],])
+        sup_ed = self.superposition_ed([real[1], fake[1],])
 
         # discriminator forward map
-        tensor = self.discriminator([label, *[sup0, sup1], *real,])
+        tensor = self.discriminator([label, *[sup_pd, sup_ed], *real,])
 
-        # calculate l2 norm of gradient
-        gradients = tf.gradients(tensor, [sup0, sup1],
-                                 unconnected_gradients=tf.UnconnectedGradients.ZERO)
+        # calculate gradients
+        grads = tf.gradients(tensor, [sup_pd, sup_ed],
+                             unconnected_gradients=tf.UnconnectedGradients.ZERO)
 
-        gradsum0 = tf.math.reduce_sum(tf.square(gradients[0]), axis=[1,2])
-        gradsum1 = tf.math.reduce_sum(tf.square(gradients[1]), axis=[1,2])
-        gradnorm = tf.sqrt(gradsum0 + gradsum1)
+        # undo input scaling
+        grads_scale = self.denormalizer([grads[0], grads[1],])
+
+        # calculate l2 norm of all gradients
+        gradsum_pd = tf.math.reduce_sum(tf.square(grads_scale[0]), axis=[1,2])
+        gradsum_ed = tf.math.reduce_sum(tf.square(grads_scale[1]), axis=[1,2])
+
+        gradnorm = tf.sqrt(gradsum_pd + gradsum_ed + 1e-6)
+        tf.print(gradnorm)
 
         # calculate dynamic lipschitz constant based actual input dimension
         not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
