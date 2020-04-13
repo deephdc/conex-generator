@@ -13,6 +13,7 @@ import typing
 run = "run02"
 cache_path = os.path.join("/home/tmp/koepke/cache", run)
 epochs = 4000
+save_prefix = "gan"
 
 # get data
 data = src.data.processed.load_data(run)
@@ -130,7 +131,7 @@ print("training time", end-start)
 
 # save model
 print("saving ...")
-savepath = os.path.join(src.models.get_path(), "gan", run)
+savepath = os.path.join(src.models.get_path(), save_prefix, run)
 
 for label, real, noise in ds.take(1):
     gen.predict([label, *noise,])
