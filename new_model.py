@@ -111,7 +111,7 @@ def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
                 distance = wd([label, *real, *fake,])
                 loss = distance
             grads = tape.gradient(loss, gen.trainable_weights)
-            dopt.apply_gradients(zip(grads, gen.trainable_weights))
+            gopt.apply_gradients(zip(grads, gen.trainable_weights))
         else:
             with tf.GradientTape(watch_accessed_variables=False) as tape:
                 tape.watch(dis.trainable_weights)
