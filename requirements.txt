@@ -10,3 +10,17 @@ marshmallow
 
 deepaas>=1.0.0
 flaat>=0.5.1
+
+
+# project requirements
+tensorflow
+numpy
+scipy
+pandas
+pyarrow
+h5py
+matplotlib
+jupyter
+lazy_import
+cookiecutter
+

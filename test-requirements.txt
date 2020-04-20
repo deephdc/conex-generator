@@ -8,5 +8,21 @@ coverage!=4.4,>=4.0 # Apache-2.0
 stestr>=1.0.0 # Apache-2.0
 testtools>=1.4.0
 
+
+
 pytest
 pytest-cov
+
+
+# project requirements
+tensorflow
+numpy
+scipy
+pandas
+pyarrow
+h5py
+matplotlib
+jupyter
+lazy_import
+cookiecutter
+
