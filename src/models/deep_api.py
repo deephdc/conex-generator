@@ -61,12 +61,13 @@ def get_metadata():
     """
 
     module = __name__.split('.', 1)
+    module[0] = "conex-generator"
 
     try:
         pkg = pkg_resources.get_distribution(module[0])
     except pkg_resources.RequirementParseError:
         # if called from CLI, try to get pkg from the path
-        distros = list(pkg_resources.find_distributions(cfg.BASE_DIR, 
+        distros = list(pkg_resources.find_distributions(cfg.BASE_DIR,
                                                         only=True))
         if len(distros) == 1:
             pkg = distros[0]
