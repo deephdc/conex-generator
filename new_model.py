@@ -142,8 +142,12 @@ def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
 print("training ...")
 start = timeit.default_timer()
 with writer.as_default():
-    train(ds, gen, dis, wd, gp, gopt, dopt, epochs)
-    writer.flush()
+    try:
+        train(ds, gen, dis, wd, gp, gopt, dopt, epochs)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        writer.flush()
 end = timeit.default_timer()
 print("training time", end-start)
 
