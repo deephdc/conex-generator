@@ -10,10 +10,15 @@ import timeit
 import typing
 
 # script input
-run = "run02"
-cache_path = os.path.join("/home/tmp/koepke/cache", run)
-epochs = 4000
+run = "run03"
 save_prefix = "gan"
+cache_path = os.path.join("/home/tmp/koepke/cache", run)
+epochs = 3000
+batchsize = 1024
+
+# input processing
+savepath = os.path.join(src.models.get_path(), save_prefix, run)
+logpath = os.path.join(savepath, "log")
 
 # get data
 data = src.data.processed.load_data(run)
@@ -81,7 +86,7 @@ ds = tf.data.Dataset.zip((
     (pd, ed),
     (noise1,)
 ))
-ds : tf.data.Dataset = ds.shuffle(100000).batch(1024).prefetch(5)
+ds : tf.data.Dataset = ds.shuffle(100000).batch(batchsize).prefetch(5)
 
 # create model
 import src.models.gan as gan
@@ -93,6 +98,8 @@ gp = gan.loss.GradientPenalty(dis)
 
 gopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
 dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
+
+writer = tf.summary.create_file_writer(logpath)
 
 # initialize and build once
 for label, real, noise in ds.take(1):
@@ -111,8 +118,12 @@ def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
                 fake = gen([label, *noise,])
                 distance = wd([label, *real, *fake,])
                 loss = distance
+
+            tf.summary.scalar("Wasserstein Distance", distance, step=ii)
+
             grads = tape.gradient(loss, gen.trainable_weights)
             gopt.apply_gradients(zip(grads, gen.trainable_weights))
+
         else:
             with tf.GradientTape(watch_accessed_variables=False) as tape:
                 tape.watch(dis.trainable_weights)
@@ -120,19 +131,24 @@ def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
                 distance = wd([label, *real, *fake,])
                 penalty = gp([label, *real, *fake,])
                 loss = - distance + penalty
+
+            tf.summary.scalar("Wasserstein Distance", distance, step=ii)
+            tf.summary.scalar("Gradient Penalty", penalty, step=ii)
+            tf.summary.scalar("Discriminator Loss", loss, step=ii)
+
             grads = tape.gradient(loss, dis.trainable_weights)
             dopt.apply_gradients(zip(grads, dis.trainable_weights))
 
 print("training ...")
 start = timeit.default_timer()
-train(ds, gen, dis, wd, gp, gopt, dopt, epochs)
+with writer.as_default():
+    train(ds, gen, dis, wd, gp, gopt, dopt, epochs)
+    writer.flush()
 end = timeit.default_timer()
 print("training time", end-start)
 
 # save model
 print("saving ...")
-savepath = os.path.join(src.models.get_path(), save_prefix, run)
-
 for label, real, noise in ds.take(1):
     gen.predict([label, *noise,])
     dis.predict([label, *real, *real,])
