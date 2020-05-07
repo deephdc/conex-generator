@@ -25,6 +25,33 @@ if 'APP_INPUT_OUTPUT_BASE_DIR' in os.environ:
 
 DATA_DIR = os.path.join(IN_OUT_BASE_DIR, 'data')
 MODELS_DIR = os.path.join(IN_OUT_BASE_DIR, 'models')
+REPORTS_DIR = os.path.join(IN_OUT_BASE_DIR, 'reports')
+
+BASE_DATA_DIR = os.path.join(BASE_DIR, 'data')
+BASE_MODELS_DIR = os.path.join(BASE_DIR, 'models')
+BASE_REPORTS_DIR = os.path.join(BASE_DIR, 'reports')
+
+if IN_OUT_BASE_DIR != BASE_DIR:
+    # create symlinks
+    if not os.path.isdir(DATA_DIR):
+        raise FileNotFoundError(DATA_DIR)
+    if not os.path.isdir(MODELS_DIR):
+        raise FileNotFoundError(MODELS_DIR)
+    if not os.path.isdir(REPORTS_DIR):
+        raise FileNotFoundError(REPORTS_DIR)
+
+    if os.path.exists(BASE_DATA_DIR):
+        os.unlink(BASE_DATA_DIR)
+    if os.path.exists(BASE_MODELS_DIR):
+        os.unlink(BASE_MODELS_DIR)
+    if os.path.exists(BASE_REPORTS_DIR):
+        os.unlink(BASE_REPORTS_DIR)
+
+    os.symlink(DATA_DIR, BASE_DATA_DIR)
+    os.symlink(MODELS_DIR, BASE_MODELS_DIR)
+    os.symlink(REPORTS_DIR, BASE_REPORTS_DIR)
+
+    print(f"symlinks to {IN_OUT_BASE_DIR} created")
 
 # Input parameters for predict() (deepaas>=1.0.0)
 class PredictArgsSchema(Schema):
