@@ -88,7 +88,7 @@ def check_files(runpath):
 
 def load_dataset(filepath, memorymap, batchread):
     if memorymap:
-        array = np.load(filepath, mmap_mode="r", fix_imports=False)
+        array = np.load(filepath, mmap_mode="c", fix_imports=False)
         if batchread == 0:
             ds = tf.data.Dataset.from_generator(
                     make_data_generator,
@@ -116,11 +116,11 @@ def make_data_generator(filepath, batchread):
         return batch_generator(filepath, batchread)
 
 def line_generator(filepath):
-    array = np.load(filepath, mmap_mode="r", fix_imports=False)
+    array = np.load(filepath, mmap_mode="c", fix_imports=False)
     return (data for data in array)
 
 def batch_generator(filepath, batchread):
-    array = np.load(filepath, mmap_mode="r", fix_imports=False)
+    array = np.load(filepath, mmap_mode="c", fix_imports=False)
     length = array.shape[0]
     if batchread < 0:
         batchread = int(np.ceil(-length/batchread))
