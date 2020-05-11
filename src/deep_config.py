@@ -95,3 +95,34 @@ class TrainArgsSchema(Schema):
         missing=1,
         description="Input argument 1 for training"
     )
+
+    dataset = fields.Str(
+            required=False,
+            missing="run01",
+            description="processed dataset which should be used for training"
+    )
+
+    save_name = fields.Str(
+            required=False,
+            missing="gan",
+            description="save name which should be used in predict"
+    )
+
+    cache_path = fields.Str(
+            required=False,
+            missing="/home/tmp/koepke/cache",
+            description="cache basepath for dataset"
+    )
+
+    epochs = fields.Integer(
+        required=False,
+        missing=1,
+        description="number of epochs for training"
+    )
+
+    batchsize = fields.Integer(
+        required=False,
+        missing=1024,
+        description="number of epochs for training"
+    )
+
