@@ -76,12 +76,31 @@ class PredictArgsSchema(Schema):
         description="Provide an URL of the data for the prediction"
     )
     
-    # an input parameter for prediction
-    arg1 = fields.Integer(
+    # input parameters for prediction
+    energy = fields.Float(
         required=False,
-        missing=1,
-        description="Input argument 1 for the prediction"
+        missing=1e9,
+        description="energy in GeV"
     )
+
+    theta = fields.Float(
+        required=False,
+        missing=0.0,
+        description="zenith angle in deg"
+    )
+
+    phi = fields.Float(
+        required=False,
+        missing=0.0,
+        description="azimuth angle in deg"
+    )
+
+    primary_particle = fields.Str(
+            required=False,
+            missing="proton",
+            description="primary particle type: proton|helium|oxygen|iron"
+    )
+
 
 # Input parameters for train() (deepaas>=1.0.0)
 class TrainArgsSchema(Schema):
@@ -90,12 +109,6 @@ class TrainArgsSchema(Schema):
 
     # available fields are e.g. fields.Integer(), fields.Str(), fields.Boolean()
     # full list of fields: https://marshmallow.readthedocs.io/en/stable/api_reference.html
-    arg1 = fields.Integer(
-        required=False,
-        missing=1,
-        description="Input argument 1 for training"
-    )
-
     dataset = fields.Str(
             required=False,
             missing="run01",
