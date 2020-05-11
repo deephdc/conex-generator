@@ -198,7 +198,7 @@ def train(**kwargs):
     # 1. implement your training here
 
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    #os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
     import src
     log = src.utils.getLogger(__name__, level="warning")
@@ -210,12 +210,13 @@ def train(**kwargs):
 
     # script input
     run = train_args["dataset"]
-    savepath = train_args["save_name"]
+    save_prefix = train_args["save_name"]
     cache_path = os.path.join(train_args["cache_path"], run)
     epochs = train_args["epochs"]
     batchsize = train_args["batchsize"]
 
     # input processing
+    savepath = os.path.join(src.models.get_path(), "deephdc", save_prefix)
     logpath = os.path.join(savepath, "log")
 
     # get data
