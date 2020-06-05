@@ -1,3 +1,5 @@
 from .dense_generator import DenseGenerator
+from .dense_generator_norm import DenseGeneratorNorm
 from .old_reduced_generator import OldReducedGenerator
+from .old_reduced_generator_norm import OldReducedGeneratorNorm
 

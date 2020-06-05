@@ -36,6 +36,14 @@ class BaseGenerator(tf.keras.Model):
                                                          self.gen_features,
                                                          self._numparticle)
 
+        self.dense_generator_norm = gencol.DenseGeneratorNorm(self.maxdepthlen,
+                                                              self.gen_features,
+                                                              self._numparticle)
+
+        self.oldr_generator_norm = gencol.OldReducedGeneratorNorm(self.maxdepthlen,
+                                                                  self.gen_features,
+                                                                  self._numparticle)
+
     @tf.function
     def call(self, inputs, training=False):
         label = inputs[0]
@@ -44,9 +52,11 @@ class BaseGenerator(tf.keras.Model):
         # run different generators
         output1 = self.dense_generator([label,noise,])
         output2 = self.oldr_generator([label,noise,])
+        output3 = self.dense_generator_norm([label,noise,])
+        output4 = self.oldr_generator_norm([label,noise,])
 
         # merge outputs
-        tensor = output1 + output2
+        tensor = output1 + output2 + output3 + output4
 
         # format data
         tensor = tensor[:,0:self.depthlen,:]
