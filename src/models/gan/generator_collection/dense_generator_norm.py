@@ -18,9 +18,9 @@ class DenseGeneratorNorm(tf.keras.layers.Layer):
         self.activation = activation
 
         self.layer1 = layers.Dense(512, activation=self.activation)
-        self.layer1_norm = layers.LayerNormalization()
+        self.layer1_norm = layers.LayerNormalization(epsilon=1e-6)
         self.layer2 = layers.Dense(1024, activation=self.activation)
-        self.layer2_norm = layers.LayerNormalization()
+        self.layer2_norm = layers.LayerNormalization(epsilon=1e-6)
         self.layer3 = layers.Dense(self.depthlen * self.gen_features,
                                    activation=tf.keras.activations.sigmoid)
 
