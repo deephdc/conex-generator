@@ -6,14 +6,15 @@ from src.models.gan import utils
 
 class OldReducedDiscriminator(tf.keras.layers.Layer):
 
-    def __init__(self, numparticle=6, **kwargs):
+    def __init__(self, numparticle=6,
+                 activation=tf.keras.activations.tanh, **kwargs):
         super().__init__(**kwargs)
 
         self._numparticle = numparticle
 
         self.labelmerger = utils.LabelMerger(self._numparticle)
 
-        self.activation = tf.keras.activations.tanh
+        self.activation = activation
 
         # transform label to data format
         self.layer_combine_flatten = layers.Flatten()
