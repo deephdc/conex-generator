@@ -1,3 +1,5 @@
-from .old_reduced_discriminator import OldReducedDiscriminator
 from .dense_discriminator import DenseDiscriminator
+from .dense_discriminator_norm import DenseDiscriminatorNorm
+from .old_reduced_discriminator import OldReducedDiscriminator
+from .old_reduced_discriminator_norm import OldReducedDiscriminatorNorm
 
