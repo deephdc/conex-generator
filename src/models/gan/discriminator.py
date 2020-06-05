@@ -20,6 +20,9 @@ class BaseDiscriminator(tf.keras.Model):
 
         self.dense_discriminator = discol.DenseDiscriminator(self._numparticle)
         self.oldr_discriminator = discol.OldReducedDiscriminator(self._numparticle)
+
+        self.dense_discriminator_norm = discol.DenseDiscriminatorNorm(self._numparticle)
+        self.oldr_discriminator_norm = discol.OldReducedDiscriminatorNorm(self._numparticle)
     
     @tf.function
     def call(self, inputs, training=False):
@@ -36,9 +39,11 @@ class BaseDiscriminator(tf.keras.Model):
         # run different generators
         output1 = self.dense_discriminator([label, data,])
         output2 = self.oldr_discriminator([label, data,])
+        output3 = self.dense_discriminator_norm([label, data,])
+        output4 = self.oldr_discriminator_norm([label, data,])
 
         # merge outputs
-        tensor = output1 + output2
+        tensor = output1 + output2 + output3 + output4
 
         return tensor
 
