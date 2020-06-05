@@ -7,7 +7,8 @@ from src.models.gan import utils
 
 class OldReducedGenerator(tf.keras.layers.Layer):
 
-    def __init__(self, depthlen=288, gen_features=8, numparticle=6, **kwargs):
+    def __init__(self, depthlen=288, gen_features=8, numparticle=6,
+                 activation=tf.keras.activations.tanh, **kwargs):
         super().__init__(**kwargs)
 
         self.depthlen = depthlen
@@ -15,7 +16,7 @@ class OldReducedGenerator(tf.keras.layers.Layer):
 
         self.labelmerger = utils.LabelMerger(numparticle=numparticle)
 
-        self.activation = tf.keras.activations.tanh
+        self.activation = activation
 
         self._nheight = 4
         self._nwidth = int(np.ceil(self.depthlen / (2 * 2 * 2 * 2 * 2)))
