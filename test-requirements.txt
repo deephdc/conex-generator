@@ -16,6 +16,7 @@ pytest-cov
 
 # project requirements
 tensorflow
+tensorflow-addons
 numpy
 scipy
 pandas
