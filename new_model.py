@@ -10,10 +10,10 @@ import timeit
 import typing
 
 # script input
-run = "run03"
-save_prefix = "gan"
+run = "run02"
+save_prefix = "test"
 cache_path = os.path.join("/home/tmp/koepke/cache", run)
-epochs = 3000
+epochs = 1
 batchsize = 1024
 
 # input processing
