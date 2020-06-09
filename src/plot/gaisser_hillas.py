@@ -41,7 +41,8 @@ allxlabel = {
 }
 
 
-def gaisser_hillas_hist(plot_path, gparam, rparam, binnum, primary, solo=False, outlier=True):
+def gaisser_hillas_hist(plot_path, gparam, rparam, binnum, primary,
+                        solo=False, outlier=True):
     if len(gparam) != len(rparam):
         msg = "gparam and rparam must have same length"
         log.error(msg)

@@ -41,7 +41,8 @@ allxlabel = {
 }
 
 
-def correlation(plot_path, gparam, rparam, param_name, primary, solo=False, filetype="png"):
+def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
+                solo=True, solo_bins=30, solo_filetype="svg"):
     if len(gparam) != len(rparam):
         msg = "gparam and rparam must have same length"
         log.error(msg)
@@ -85,7 +86,8 @@ def correlation(plot_path, gparam, rparam, param_name, primary, solo=False, file
             os.makedirs(os.path.join(plot_path, foldername), exist_ok=True)
 
             param_index = [fitparam_layout[name] for name in param_name]
-
+            
+            # get data
             glist1 = gparam[:,ii,param_index[0]]
             glist2 = gparam[:,jj,param_index[1]]
             rlist1 = rparam[:,ii,param_index[0]]
@@ -97,8 +99,12 @@ def correlation(plot_path, gparam, rparam, param_name, primary, solo=False, file
                 glist2 = np.log10(glist2)
                 rlist2 = np.log10(rlist2)
 
+
             # plot both
-            filename = "b_" + str(jj) + "_" + str(ii) + "_" + channel_name2 + "_" + channel_name1 + "_" + ("_".join(reversed(param_name))) + "_" + primary_name + "." + filetype
+            filename = "b_" + str(jj) + "_" + str(ii) + "_" \
+                       + channel_name2 + "_" + channel_name1 + "_" \
+                       + ("_".join(reversed(param_name))) + "_" \
+                       + primary_name + "." + filetype
             label1 = "CONEX"
             color1 = "C0"
             label2 = "GAN"
@@ -135,12 +141,60 @@ def correlation(plot_path, gparam, rparam, param_name, primary, solo=False, file
                     marker="o",)
 
             plt.legend()
+
+            xlim = plt.gca().get_xlim()
+            ylim = plt.gca().get_ylim()
+
             plt.savefig(os.path.join(plot_path, foldername, filename))
             plt.close(fig)
 
+
+            # plot difference
+            filename = "d_" + str(jj) + "_" + str(ii) + "_" \
+                       + channel_name2 + "_" + channel_name1 + "_" \
+                       + ("_".join(reversed(param_name))) + "_" \
+                       + primary_name + "." + solo_filetype
+            label = "CONEX - GAN"
+            color = "C7"
+
+            fig = plt.figure(figsize=(16,9))
+            title = pretty_name(
+                    "correlation: " \
+                    + ("/".join(reversed(param_name))) \
+                    + ", channel: " \
+                    + channel_name2 + "/" + channel_name1 \
+                    + ", primary: " \
+                    + primary_name)
+            xlabel = pretty_name(channel_name1 + ": " + allxlabel[param_name[0]])
+            ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
+
+            plt.xlabel(xlabel)
+            plt.ylabel(ylabel)
+            plt.title(title)
+            plt.grid(True)
+
+            hr, xedges, yedges = np.histogram2d(rlist1, rlist2,
+                                                solo_bins,
+                                                range=[xlim, ylim],)
+            hg, xedges, yedges = np.histogram2d(glist1, glist2,
+                                                solo_bins,
+                                                range=[xlim, ylim],)
+            diff = hr - hg
+
+            plt.pcolormesh(xedges, yedges, np.abs(diff.T))
+
+            plt.colorbar()
+            #plt.legend()
+            plt.savefig(os.path.join(plot_path, foldername, filename))
+            plt.close(fig)
+
+
             if solo:
                 # plot solo r
-                filename = "r_" + str(jj) + "_" + str(ii) + "_" + channel_name2 + "_" + channel_name1 + "_" + ("_".join(reversed(param_name))) + "_" + primary_name + "." + filetype
+                filename = "r_" + str(jj) + "_" + str(ii) + "_" \
+                           + channel_name2 + "_" + channel_name1 + "_" \
+                           + ("_".join(reversed(param_name))) + "_" \
+                           + primary_name + "." + solo_filetype
                 label = "CONEX"
                 color = "C0"
 
@@ -160,19 +214,22 @@ def correlation(plot_path, gparam, rparam, param_name, primary, solo=False, file
                 plt.title(title)
                 plt.grid(True)
 
-                plt.scatter(
+                plt.hist2d(
                         rlist1, rlist2,
-                        label=label,
-                        color=color,
-                        alpha=1.0,
-                        marker="o",)
+                        solo_bins,
+                        range=[xlim, ylim],
+                        label=label,)
 
-                plt.legend()
+                plt.colorbar()
+                #plt.legend()
                 plt.savefig(os.path.join(plot_path, foldername, filename))
                 plt.close(fig)
 
                 # plot solo g
-                filename = "g_" + str(jj) + "_" + str(ii) + "_" + channel_name2 + "_" + channel_name1 + "_" + ("_".join(reversed(param_name))) + "_" + primary_name + "." + filetype
+                filename = "g_" + str(jj) + "_" + str(ii) + "_" \
+                           + channel_name2 + "_" + channel_name1 + "_" \
+                           + ("_".join(reversed(param_name))) + "_" \
+                           + primary_name + "." + solo_filetype
                 label = "GAN"
                 color = "C3"
 
@@ -192,14 +249,14 @@ def correlation(plot_path, gparam, rparam, param_name, primary, solo=False, file
                 plt.title(title)
                 plt.grid(True)
 
-                plt.scatter(
+                plt.hist2d(
                         glist1, glist2,
-                        label=label,
-                        color=color,
-                        alpha=1.0,
-                        marker="o",)
+                        solo_bins,
+                        range=[xlim, ylim],
+                        label=label,)
 
-                plt.legend()
+                plt.colorbar()
+                #plt.legend()
                 plt.savefig(os.path.join(plot_path, foldername, filename))
                 plt.close(fig)
 
