@@ -202,7 +202,7 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
             ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
 
             if logscale:
-                norm = matplotlib.colors.SymLogNorm(1, linscale=0.2)
+                norm = matplotlib.colors.SymLogNorm(1, linscale=0.2, base=10)
             else:
                 norm = matplotlib.colors.Normalize()
 
@@ -263,7 +263,7 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                 ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
 
                 if logscale:
-                    norm = matplotlib.colors.SymLogNorm(1, linscale=0.2)
+                    norm = matplotlib.colors.SymLogNorm(1, linscale=0.2, base=10)
                 else:
                     norm = matplotlib.colors.Normalize()
 
@@ -325,7 +325,7 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                 ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
 
                 if logscale:
-                    norm = matplotlib.colors.SymLogNorm(1, linscale=0.2)
+                    norm = matplotlib.colors.SymLogNorm(1, linscale=0.2, base=10)
                 else:
                     norm = matplotlib.colors.Normalize()
 
