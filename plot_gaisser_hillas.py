@@ -47,6 +47,8 @@ if len(index_nan) != 0:
     gparam = gparam[index_nonan,:,:]
     rparam = rparam[index_nonan,:,:]
 
+assert gparam.shape == rparam.shape
+
 # plot path
 plot_path = os.path.join(
         src.reports.figures.get_path(),

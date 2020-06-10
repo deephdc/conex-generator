@@ -2,14 +2,19 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
+        "bins",
+        type=int,
+        help="number of bins for combined histograms"
+        )
+parser.add_argument(
         "path",
         type=str,
         help="path to Gaisser-Hillas fit parameter (relative to the project root directory)"
         )
 
-#args = parser.parse_args()
-#model_base = args.path
-model_base = "models/talk/run03/03/gaisser_hillas_ecut_1.00e+08_1.00e+10_tcut_3.50e+01_7.00e+01_fit-error_True"
+args = parser.parse_args()
+binnum = args.bins
+model_base = args.path
 
 
 import numpy as np
@@ -51,6 +56,20 @@ plot_path = os.path.join(
         src.utils.timestamp() + "_correlation")
 os.makedirs(plot_path)
 
-# nmax
-src.plot.correlation(plot_path, gparam, rparam, "nmax_xmax", "all", solo=True)
+# all label
+src.plot.correlation(plot_path, gparam, rparam, "nmax_nmax", "all", solo=True, solo_bins=binnum)
+src.plot.correlation(plot_path, gparam, rparam, "nmax_xmax", "all", solo=True, solo_bins=binnum)
+src.plot.correlation(plot_path, gparam, rparam, "xmax_xmax", "all", solo=True, solo_bins=binnum)
+
+# per primary
+allprimaries = set(label[:,0].tolist())
+for primary in allprimaries:
+    index = np.where(label[:,0] == primary)[0]
+    tgparam = gparam[index,:,:]
+    trparam = rparam[index,:,:]
+    tbinnum = max([min([int(np.ceil(np.sqrt(len(tgparam)/50))), binnum]), int(np.ceil(binnum/len(allprimaries)))])
+
+    src.plot.correlation(plot_path, tgparam, trparam, "nmax_nmax", int(primary), solo=True, solo_bins=tbinnum)
+    src.plot.correlation(plot_path, tgparam, trparam, "nmax_xmax", int(primary), solo=True, solo_bins=tbinnum)
+    src.plot.correlation(plot_path, tgparam, trparam, "xmax_xmax", int(primary), solo=True, solo_bins=tbinnum)
 
