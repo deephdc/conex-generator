@@ -45,7 +45,7 @@ allxlabel = {
 
 
 def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
-                solo=True, solo_bins=30, solo_filetype="svg"):
+                solo=True, solo_bins=30, solo_filetype="svg", logscale=False):
     if len(gparam) != len(rparam):
         msg = "gparam and rparam must have same length"
         log.error(msg)
@@ -201,6 +201,11 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
             xlabel = pretty_name(channel_name1 + ": " + allxlabel[param_name[0]])
             ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
 
+            if logscale:
+                norm = matplotlib.colors.SymLogNorm(1, linscale=0.2)
+            else:
+                norm = matplotlib.colors.Normalize()
+
             hr, xedges, yedges = np.histogram2d(rlist1, rlist2,
                                                 solo_bins,
                                                 range=[xlim, ylim],)
@@ -216,7 +221,7 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
             plt.title(title)
             plt.grid(True)
 
-            plt.pcolormesh(xedges, yedges, np.abs(diff.T))
+            plt.pcolormesh(xedges, yedges, np.abs(diff.T), norm=norm)
 
             plt.colorbar()
             #plt.legend()
@@ -231,7 +236,7 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                 plt.ylabel(ylabel)
                 #plt.title(title)
                 plt.grid(True)
-                plt.pcolormesh(xedges, yedges, np.abs(diff.T))
+                plt.pcolormesh(xedges, yedges, np.abs(diff.T), norm=norm)
                 plt.colorbar()
                 #plt.legend()
 
@@ -257,6 +262,11 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                 xlabel = pretty_name(channel_name1 + ": " + allxlabel[param_name[0]])
                 ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
 
+                if logscale:
+                    norm = matplotlib.colors.SymLogNorm(1, linscale=0.2)
+                else:
+                    norm = matplotlib.colors.Normalize()
+
                 fig = plt.figure(figsize=(16,9))
 
                 plt.xlabel(xlabel)
@@ -268,7 +278,8 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                         rlist1, rlist2,
                         solo_bins,
                         range=[xlim, ylim],
-                        label=label,)
+                        label=label,
+                        norm=norm,)
 
                 plt.colorbar()
                 #plt.legend()
@@ -287,7 +298,8 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                             rlist1, rlist2,
                             solo_bins,
                             range=[xlim, ylim],
-                            label=label,)
+                            label=label,
+                            norm=norm,)
                     plt.colorbar()
                     #plt.legend()
 
@@ -312,6 +324,11 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                 xlabel = pretty_name(channel_name1 + ": " + allxlabel[param_name[0]])
                 ylabel = pretty_name(channel_name2 + ": " + allxlabel[param_name[1]])
 
+                if logscale:
+                    norm = matplotlib.colors.SymLogNorm(1, linscale=0.2)
+                else:
+                    norm = matplotlib.colors.Normalize()
+
                 fig = plt.figure(figsize=(16,9))
 
                 plt.xlabel(xlabel)
@@ -323,7 +340,8 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                         glist1, glist2,
                         solo_bins,
                         range=[xlim, ylim],
-                        label=label,)
+                        label=label,
+                        norm=norm,)
 
                 plt.colorbar()
                 #plt.legend()
@@ -342,7 +360,8 @@ def correlation(plot_path, gparam, rparam, param_name, primary, filetype="png",
                             glist1, glist2,
                             solo_bins,
                             range=[xlim, ylim],
-                            label=label,)
+                            label=label,
+                            norm=norm,)
                     plt.colorbar()
                     #plt.legend()
 

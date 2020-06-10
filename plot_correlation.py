@@ -11,10 +11,18 @@ parser.add_argument(
         type=str,
         help="path to Gaisser-Hillas fit parameter (relative to the project root directory)"
         )
+parser.add_argument(
+        "--logscale",
+        action="store_const",
+        const=True,
+        default=False,
+        help="use logarithmic colorscale for density plots"
+        )
 
 args = parser.parse_args()
 binnum = args.bins
 model_base = args.path
+logscale = args.logscale
 
 
 import numpy as np
@@ -57,9 +65,9 @@ plot_path = os.path.join(
 os.makedirs(plot_path)
 
 # all label
-src.plot.correlation(plot_path, gparam, rparam, "nmax_nmax", "all", solo=True, solo_bins=binnum)
-src.plot.correlation(plot_path, gparam, rparam, "nmax_xmax", "all", solo=True, solo_bins=binnum)
-src.plot.correlation(plot_path, gparam, rparam, "xmax_xmax", "all", solo=True, solo_bins=binnum)
+src.plot.correlation(plot_path, gparam, rparam, "nmax_nmax", "all", solo=True, solo_bins=binnum, logscale=logscale)
+src.plot.correlation(plot_path, gparam, rparam, "nmax_xmax", "all", solo=True, solo_bins=binnum, logscale=logscale)
+src.plot.correlation(plot_path, gparam, rparam, "xmax_xmax", "all", solo=True, solo_bins=binnum, logscale=logscale)
 
 # per primary
 allprimaries = set(label[:,0].tolist())
@@ -69,7 +77,7 @@ for primary in allprimaries:
     trparam = rparam[index,:,:]
     tbinnum = max([min([int(np.ceil(np.sqrt(len(tgparam)/50))), binnum]), int(np.ceil(binnum/len(allprimaries)))])
 
-    src.plot.correlation(plot_path, tgparam, trparam, "nmax_nmax", int(primary), solo=True, solo_bins=tbinnum)
-    src.plot.correlation(plot_path, tgparam, trparam, "nmax_xmax", int(primary), solo=True, solo_bins=tbinnum)
-    src.plot.correlation(plot_path, tgparam, trparam, "xmax_xmax", int(primary), solo=True, solo_bins=tbinnum)
+    src.plot.correlation(plot_path, tgparam, trparam, "nmax_nmax", int(primary), solo=True, solo_bins=tbinnum, logscale=logscale)
+    src.plot.correlation(plot_path, tgparam, trparam, "nmax_xmax", int(primary), solo=True, solo_bins=tbinnum, logscale=logscale)
+    src.plot.correlation(plot_path, tgparam, trparam, "xmax_xmax", int(primary), solo=True, solo_bins=tbinnum, logscale=logscale)
 
