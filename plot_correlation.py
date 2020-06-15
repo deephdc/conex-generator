@@ -61,7 +61,9 @@ assert gparam.shape == rparam.shape
 plot_path = os.path.join(
         src.reports.figures.get_path(),
         model_base,
-        src.utils.timestamp() + "_correlation")
+        src.utils.timestamp() + "_correlation" \
+                              + f"_logscale_{logscale}" \
+        )
 os.makedirs(plot_path)
 
 # all label
