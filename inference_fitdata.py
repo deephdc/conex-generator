@@ -14,14 +14,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 # script input
-run = "run02"
+run = "run03_test02"
 cache_path = os.path.join("/home/tmp/koepke/cache", run)
-save_prefix = "remote/short/run02"
-save_index = "01"
+save_prefix = "gan/epochs_3000/run03"
+save_index = "02"
 
 processbatchlen = 1000
-labelbatchlen = 200
-numfitdata = 20000
+labelbatchlen = 10
+numfitdata = 100000
 
 assert numfitdata % labelbatchlen == 0
 assert processbatchlen >= labelbatchlen
@@ -171,6 +171,8 @@ for label, real, noise in ds:
         index += labelbatchlen
         if index >= numfitdata:
             break
+
+print("processed data:", index)
 
 # save data
 rdata_path = os.path.join(fitdata_save_path, "rdata.npy")
