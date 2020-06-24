@@ -34,6 +34,13 @@ class BaseDiscriminator(tf.keras.Model):
                 initializer=tf.keras.initializers.Constant(True),
                 trainable=False,)
 
+        self._ensemble_weight = self.add_weight(
+                name="ensemble_weight",
+                shape=(self.num_model,),
+                dtype=tf.float32,
+                initializer=tf.keras.initializers.Constant([1.0]*self.num_model),
+                trainable=True,)
+
     @property
     def ensemble(self,):
         return self._ensemble_var.numpy()
@@ -89,31 +96,31 @@ class BaseDiscriminator(tf.keras.Model):
 
         # run different discriminators
         batchsize = label.shape[0]
-        used_models = 0.0
 
-        output_dummy = self.dense_discriminator([label, data,])
         zeros = tf.zeros((batchsize,1,))
-
         output0 = zeros
         output1 = zeros
         output2 = zeros
         output3 = zeros
 
+        used_models = 0.0
+        ensemble_weight = tf.math.log(tf.math.exp(self._ensemble_weight) + 1.0)
+
         if self._ensemble_var[0]:
-            output0 = self.dense_discriminator([label, data,])
-            used_models += 1.0
+            output0 = ensemble_weight[0] * self.dense_discriminator([label, data,])
+            used_models += ensemble_weight[0]
 
         if self._ensemble_var[1]:
-            output1 = self.oldr_discriminator([label, data,])
-            used_models += 1.0
+            output1 = ensemble_weight[1] * self.oldr_discriminator([label, data,])
+            used_models += ensemble_weight[1]
         
         if self._ensemble_var[2]:
-            output2 = self.dense_discriminator_norm([label, data,])
-            used_models += 1.0
+            output2 = ensemble_weight[2] * self.dense_discriminator_norm([label, data,])
+            used_models += ensemble_weight[2]
 
         if self._ensemble_var[3]:
-            output3 = self.oldr_discriminator_norm([label, data,])
-            used_models += 1.0
+            output3 = ensemble_weight[3] * self.oldr_discriminator_norm([label, data,])
+            used_models += ensemble_weight[3]
 
         # merge outputs
         tensor = (output0 + output1 + output2 + output3) / used_models
