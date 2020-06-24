@@ -48,7 +48,7 @@ class OldReducedDiscriminatorNorm(tf.keras.layers.Layer):
 
         self.layer_end_flatten = layers.Flatten()
         self.layer_end_dense1 = layers.Dense(256, activation=self.activation)
-        self.layer_end_dense1_norm = tfa.layers.InstanceNormalization(epsilon=1e-6)
+        self.layer_end_dense1_norm = layers.LayerNormalization(epsilon=1e-6)
         self.layer_end_dense2 = layers.Dense(1,   activation=None)
 
 
