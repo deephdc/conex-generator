@@ -114,5 +114,5 @@ class OldReducedGeneratorNorm(tf.keras.layers.Layer):
         # shape should be [None, self.depthlen, self.gen_features]
         tensor = tf.squeeze(tensor, [1])[:,0:self.depthlen,:]
 
-        return tensor * 1.5
+        return tensor * 10.0
 

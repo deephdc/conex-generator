@@ -40,5 +40,5 @@ class DenseGeneratorNorm(tf.keras.layers.Layer):
 
         tensor = tf.reshape(tensor, shape=[-1, self.depthlen, self.gen_features])
 
-        return tensor * 1.5
+        return tensor * 10.0
 
