@@ -13,6 +13,7 @@ class DenseGenerator(tf.keras.layers.Layer):
 
         self.depthlen = depthlen
         self.gen_features = gen_features
+
         self.overscale = 10.0
         self.expscale = expscale
 
