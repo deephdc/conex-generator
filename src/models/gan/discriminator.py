@@ -42,7 +42,7 @@ class BaseDiscriminator(tf.keras.Model):
                 trainable=True,)
 
     @property
-    def ensemble(self,):
+    def ensemble(self):
         return self._ensemble_var.numpy()
 
     @ensemble.setter
