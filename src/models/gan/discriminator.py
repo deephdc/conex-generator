@@ -19,13 +19,14 @@ class BaseDiscriminator(tf.keras.Model):
         self.datamerger = utils.DataMerger(pd_feature_list, ed_feature_list)
         self.standardizer = utils.DataMaskStandardizer()
 
-        self.dense_discriminator = discol.DenseDiscriminator(self._numparticle)
-        self.oldr_discriminator = discol.OldReducedDiscriminator(self._numparticle)
+        self.models = [
+                discol.DenseDiscriminator(self._numparticle),
+                discol.OldReducedDiscriminator(self._numparticle),
+                discol.DenseDiscriminatorNorm(self._numparticle),
+                discol.OldReducedDiscriminatorNorm(self._numparticle),
+        ]
 
-        self.dense_discriminator_norm = discol.DenseDiscriminatorNorm(self._numparticle)
-        self.oldr_discriminator_norm = discol.OldReducedDiscriminatorNorm(self._numparticle)
-
-        self.num_model = 4
+        self.num_model = len(self.models)
 
         self._ensemble_var = self.add_weight(
                 name="ensemble",
@@ -98,32 +99,22 @@ class BaseDiscriminator(tf.keras.Model):
         batchsize = label.shape[0]
 
         zeros = tf.zeros((batchsize,1,))
-        output0 = zeros
-        output1 = zeros
-        output2 = zeros
-        output3 = zeros
+        outputs = [zeros] * self.num_model
 
-        used_models = 0.0
         ensemble_weight = tf.math.log(tf.math.exp(self._ensemble_weight) + 1.0)
+        used_ensemble_weight = 0.0
 
-        if self._ensemble_var[0]:
-            output0 = ensemble_weight[0] * self.dense_discriminator([label, data,])
-            used_models += ensemble_weight[0]
-
-        if self._ensemble_var[1]:
-            output1 = ensemble_weight[1] * self.oldr_discriminator([label, data,])
-            used_models += ensemble_weight[1]
-        
-        if self._ensemble_var[2]:
-            output2 = ensemble_weight[2] * self.dense_discriminator_norm([label, data,])
-            used_models += ensemble_weight[2]
-
-        if self._ensemble_var[3]:
-            output3 = ensemble_weight[3] * self.oldr_discriminator_norm([label, data,])
-            used_models += ensemble_weight[3]
+        for ii in range(self.num_model):
+            if self._ensemble_var[ii]:
+                outputs[ii] = (self.models[ii]([label, data,]))
 
         # merge outputs
-        tensor = (output0 + output1 + output2 + output3) / used_models
+        tensor = zeros
+        for ii in range(self.num_model):
+            if self._ensemble_var[ii]:
+                tensor += ensemble_weight[ii] * outputs[ii]
+                used_ensemble_weight += ensemble_weight[ii]
+        tensor /= used_ensemble_weight
 
         return tensor
 

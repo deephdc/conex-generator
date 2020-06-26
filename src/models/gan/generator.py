@@ -132,20 +132,20 @@ class BaseGenerator(tf.keras.Model):
         zeros = tf.zeros((batchsize,self.depthlen,self.gen_features,))
         outputs = [zeros] * self.num_model
 
-        used_models = 0.0
         ensemble_weight = tf.math.log(tf.math.exp(self._ensemble_weight) + 1.0)
+        used_ensemble_weight = 0.0
 
         for ii in range(self.num_model):
             if self._ensemble_var[ii]:
-                output = ensemble_weight[ii] * (self.models[ii]([label,noise,]))
-                outputs[ii] = output[:,0:self.depthlen,:]
-                used_models += ensemble_weight[ii]
+                outputs[ii] = (self.models[ii]([label,noise,]))[:,0:self.depthlen,:]
 
         # merge outputs
         tensor = zeros
         for ii in range(self.num_model):
-            tensor += outputs[ii]
-        tensor /= used_models
+            if self._ensemble_var[ii]:
+                tensor += ensemble_weight[ii] * outputs[ii]
+                used_ensemble_weight += ensemble_weight[ii]
+        tensor /= used_ensemble_weight
 
         # format data
         data = self.datasplitter(tensor)
