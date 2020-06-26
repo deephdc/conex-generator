@@ -8,15 +8,23 @@ from src.models.gan import utils
 class OldReducedGenerator(tf.keras.layers.Layer):
 
     def __init__(self, depthlen=288, gen_features=8, numparticle=6,
+                 overscale=10.0, expscale=False,
                  activation=tf.keras.activations.tanh, **kwargs):
         super().__init__(**kwargs)
 
         self.depthlen = depthlen
         self.gen_features = gen_features
 
+        self.overscale = 10.0
+        self.expscale = expscale
+
         self.labelmerger = utils.LabelMerger(numparticle=numparticle)
 
         self.activation = activation
+        if self.expscale:
+            last_activation = tf.keras.activations.elu
+        else:
+            last_activation = tf.keras.activations.sigmoid
 
         self._nheight = 4
         self._nwidth = int(np.ceil(self.depthlen / (2 * 2 * 2 * 2 * 2)))
@@ -62,7 +70,7 @@ class OldReducedGenerator(tf.keras.layers.Layer):
                                                 activation=self.activation)
         self.layer_rc5 = layers.Conv2D(self.gen_features, (self._nheight, 5),
                                        padding="valid",
-                                       activation=tf.keras.activations.sigmoid)
+                                       activation=last_activation)
 
     @tf.function
     def call(self, inputs, training=False):
@@ -100,5 +108,10 @@ class OldReducedGenerator(tf.keras.layers.Layer):
         # shape should be [None, self.depthlen, self.gen_features]
         tensor = tf.squeeze(tensor, [1])[:,0:self.depthlen,:]
 
-        return tensor * 10.0
+        if self.expscale:
+            tensor = tf.math.exp(-1.0*(tensor + 1.0 - tf.math.log(self.overscale)))
+        else:
+            tensor = tensor * self.overscale
+
+        return tensor
 
