@@ -29,19 +29,41 @@ class BaseGenerator(tf.keras.Model):
 
         self.gen_features = self.datasplitter.gen_features
 
-        self.dense_generator = gencol.DenseGenerator(
-                self.maxdepthlen, self.gen_features, self._numparticle)
+        self.models = [
+                gencol.DenseGenerator(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=False),
 
-        self.oldr_generator = gencol.OldReducedGenerator(
-                self.maxdepthlen, self.gen_features, self._numparticle)
+                gencol.DenseGenerator(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=True),
 
-        self.dense_generator_norm = gencol.DenseGeneratorNorm(
-                self.maxdepthlen, self.gen_features, self._numparticle)
+                gencol.OldReducedGenerator(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=False),
 
-        self.oldr_generator_norm = gencol.OldReducedGeneratorNorm(
-                self.maxdepthlen, self.gen_features, self._numparticle)
+                gencol.OldReducedGenerator(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=True),
 
-        self.num_model = 4
+                gencol.DenseGeneratorNorm(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=False),
+
+                gencol.DenseGeneratorNorm(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=True),
+
+                gencol.OldReducedGeneratorNorm(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=False),
+
+                gencol.OldReducedGeneratorNorm(
+                    self.maxdepthlen, self.gen_features, self._numparticle,
+                    expscale=True),
+        ]
+
+        self.num_model = len(self.models)
 
         self._ensemble_var = self.add_weight(
                 name="ensemble",
@@ -108,36 +130,22 @@ class BaseGenerator(tf.keras.Model):
         batchsize = label.shape[0]
 
         zeros = tf.zeros((batchsize,self.depthlen,self.gen_features,))
-        output0 = zeros
-        output1 = zeros
-        output2 = zeros
-        output3 = zeros
+        outputs = [zeros] * self.num_model
 
         used_models = 0.0
         ensemble_weight = tf.math.log(tf.math.exp(self._ensemble_weight) + 1.0)
 
-        if self._ensemble_var[0]:
-            output0 = ensemble_weight[0] * self.dense_generator([label,noise,])
-            output0 = output0[:,0:self.depthlen,:]
-            used_models += ensemble_weight[0]
-
-        if self._ensemble_var[1]:
-            output1 = ensemble_weight[1] * self.oldr_generator([label,noise,])
-            output1 = output1[:,0:self.depthlen,:]
-            used_models += ensemble_weight[1]
-        
-        if self._ensemble_var[2]:
-            output2 = ensemble_weight[2] * self.dense_generator_norm([label,noise,])
-            output2 = output2[:,0:self.depthlen,:]
-            used_models += ensemble_weight[2]
-
-        if self._ensemble_var[3]:
-            output3 = ensemble_weight[3] * self.oldr_generator_norm([label,noise,])
-            output3 = output3[:,0:self.depthlen,:]
-            used_models += ensemble_weight[3]
+        for ii in range(self.num_model):
+            if self._ensemble_var[ii]:
+                output = ensemble_weight[ii] * (self.models[ii]([label,noise,]))
+                outputs[ii] = output[:,0:self.depthlen,:]
+                used_models += ensemble_weight[ii]
 
         # merge outputs
-        tensor = (output0 + output1 + output2 + output3) / used_models
+        tensor = zeros
+        for ii in range(self.num_model):
+            tensor += outputs[ii]
+        tensor /= used_models
 
         # format data
         data = self.datasplitter(tensor)
