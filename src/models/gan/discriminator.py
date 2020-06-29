@@ -20,10 +20,29 @@ class BaseDiscriminator(tf.keras.Model):
         self.standardizer = utils.DataMaskStandardizer()
 
         self.models = [
-                discol.DenseDiscriminator(self._numparticle),
-                discol.OldReducedDiscriminator(self._numparticle),
-                discol.DenseDiscriminatorNorm(self._numparticle),
-                discol.OldReducedDiscriminatorNorm(self._numparticle),
+                discol.DenseDiscriminator(
+                    self._numparticle, expscale=False),
+
+                discol.DenseDiscriminator(
+                    self._numparticle, expscale=True),
+
+                discol.OldReducedDiscriminator(
+                    self._numparticle, expscale=False),
+
+                discol.OldReducedDiscriminator(
+                    self._numparticle, expscale=True),
+
+                discol.DenseDiscriminatorNorm(
+                    self._numparticle, expscale=False),
+
+                discol.DenseDiscriminatorNorm(
+                    self._numparticle, expscale=True),
+
+                discol.OldReducedDiscriminatorNorm(
+                    self._numparticle, expscale=False),
+
+                discol.OldReducedDiscriminatorNorm(
+                    self._numparticle, expscale=True),
         ]
 
         self.num_model = len(self.models)
