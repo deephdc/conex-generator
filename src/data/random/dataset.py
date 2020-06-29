@@ -1,7 +1,4 @@
-import lazy_import
-
-tf = lazy_import.lazy_module("tensorflow")
-#import tensorflow as tf
+import tensorflow as tf
 import numpy as np
 
 import src.utils
