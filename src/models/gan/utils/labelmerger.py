@@ -3,9 +3,12 @@ import tensorflow as tf
 
 class LabelMerger(tf.keras.layers.Layer):
 
-    def __init__(self, numparticle=6, **kwargs):
+    def __init__(self, numparticle=6, expscale=False, epsilon=1e-25, **kwargs):
         super().__init__(**kwargs)
         self._numparticle = numparticle
+
+        self.expscale = expscale
+        self.epsilon = epsilon
 
     @tf.function
     def call(self, inputs, training=False):
@@ -16,6 +19,9 @@ class LabelMerger(tf.keras.layers.Layer):
         energy = inputs[:,1] / 1e10
         theta = inputs[:,2] / 90.0
         phi = inputs[:,3] / 180.0
+
+        if self.expscale:
+            energy = tf.math.log(tf.math.abs(energy) + self.epsilon)
 
         # merge
         tensor = tf.concat(
