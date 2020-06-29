@@ -17,7 +17,8 @@ class DenseGeneratorNorm(tf.keras.layers.Layer):
         self.overscale = 10.0
         self.expscale = expscale
 
-        self.labelmerger = utils.LabelMerger(numparticle=numparticle)
+        self.labelmerger = utils.LabelMerger(numparticle=numparticle,
+                                             expscale=expscale)
 
         self.activation = activation
         if self.expscale:
