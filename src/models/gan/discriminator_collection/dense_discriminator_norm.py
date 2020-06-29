@@ -7,12 +7,17 @@ from src.models.gan import utils
 class DenseDiscriminatorNorm(tf.keras.layers.Layer):
 
     def __init__(self, numparticle=6,
+                 expscale=False, epsilon=1e-25,
                  activation=tf.keras.activations.tanh, **kwargs):
         super().__init__(**kwargs)
 
         self._numparticle = numparticle
 
-        self.labelmerger = utils.LabelMerger(self._numparticle)
+        self.expscale = expscale
+        self.epsilon = epsilon
+
+        self.labelmerger = utils.LabelMerger(numparticle=numparticle,
+                                             expscale=expscale)
 
         self.activation = activation
 
@@ -31,6 +36,9 @@ class DenseDiscriminatorNorm(tf.keras.layers.Layer):
     def call(self, inputs, training=False):
         label = inputs[0]
         data = inputs[1]
+
+        if self.expscale:
+            data = tf.math.log(tf.abs(data) + self.epsilon)
 
         labeltensor= self.labelmerger(label)
         labeltensor = self.layer_label_flatten(labeltensor)
