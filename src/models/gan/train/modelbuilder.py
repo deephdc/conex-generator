@@ -49,7 +49,7 @@ class ModelBuilder():
                 ed_maxdata=self.databuilder.ed_maxdata,)
 
         # init once
-        for label, real, noise in self.databuilder.dataset.batch(1).take(1):
+        for label, real, noise in self.databuilder.dataset.take(1):
             out1 = self.generator([label, *noise,])
             out2 = self.discriminator([label, *real, *real,])
             out3 = self.wasserstein_distance([label, *real, *out1,])

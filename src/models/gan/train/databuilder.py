@@ -8,11 +8,14 @@ import src.data
 
 class DataBuilder():
 
-    def __init__(self, run):
+    def __init__(self, run, batchsize):
         self.run = run
+        self.batchsize = batchsize
 
+        # constructs
         self.dataset : tf.data.Dataset = None
 
+        # internal
         data = src.data.processed.load_data(self.run)
         self.pd : tf.data.Dataset = data[0]
         self.ed : tf.data.Dataset = data[1]
@@ -51,11 +54,16 @@ class DataBuilder():
     def build(self):
         noise1 = src.data.random.uniform_dataset((100,))
 
-        self.dataset : tf.data.Dataset = tf.data.Dataset.zip((
+        self.dataset = tf.data.Dataset.zip((
             self.label,
             (self.pd, self.ed),
             (noise1,)
         ))
+
+        self.dataset : tf.data.Dataset = self.dataset \
+                .shuffle(100000) \
+                .batch(self.batchsize) \
+                .prefetch(5)
 
         return self
 
