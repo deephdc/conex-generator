@@ -1,5 +1,10 @@
 import tensorflow as tf
 import os
+import timeit
+from contextlib import nullcontext
+
+import src.utils
+log = src.utils.getLogger(__name__)
 
 
 class TrainBuilder():
@@ -34,12 +39,12 @@ class TrainBuilder():
         return self
 
     def summary_writer(self, path):
-        logpath = os.path.join(path, "tensorboard")
+        summarypath = os.path.join(path, "tensorboard")
 
         if self.writer is not None:
             self.writer.flush()
 
-        self.writer = tf.summary.create_file_writer(logpath)
+        self.writer = tf.summary.create_file_writer(summarypath)
 
         return self
 
@@ -52,8 +57,50 @@ class TrainBuilder():
 
         return self
 
-    def execute(self, train_type, epochs):
+    def execute(self, strategy, epochs):
         if not self.built:
             raise RuntimeError("TrainBuilder has not been built yet")
-        pass
 
+        # choose strategy
+        if strategy == "single":
+            current_strategy = self.strategy_single
+        else:
+            raise NotImplementedError(f"unknown training strategy: {strategy}")
+
+        # prepare summary writer, if any
+        if self.writer is None:
+            writer_context = nullcontext()
+        else:
+            writer_context = self.writer.as_default()
+
+        # run strategy
+        with writer_context:
+            log.info(f"training started with strategy: {strategy}")
+            starttime = timeit.default_timer()
+
+            try:
+                current_strategy(epochs)
+
+            except KeyboardInterrupt:
+                pass
+
+            finally:
+                if self.writer is not None:
+                    self.writer.flush()
+
+            runtime = timeit.default_timer() - starttime
+            log.info(f"training done in {runtime/60/60:.2f} hours")
+
+        return self
+
+    def strategy_single(self, epochs):
+        dataset = self.data.dataset
+
+        generator = self.model.generator
+        discriminator = self.model.discriminator
+        wasserstein_distance = self.model.wasserstein_distance
+        gradient_penalty = self.model.gradient_penalty
+
+        for epoch in range(epochs):
+            for ii, (label, real, noise) in dataset.enumerate():
+                pass
