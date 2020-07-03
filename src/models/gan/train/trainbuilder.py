@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 import os
 import timeit
 from contextlib import nullcontext
@@ -64,7 +65,7 @@ class TrainBuilder():
     def _get_learning_rate_discriminator(self):
         return self.learning_rate_discriminator
 
-    def execute(self, strategy, epochs):
+    def execute(self, strategy, update_steps, *args, **kwargs):
         if not self.built:
             raise RuntimeError("TrainBuilder has not been built yet")
 
@@ -73,6 +74,12 @@ class TrainBuilder():
             current_strategy = self._strategy_single
         elif strategy == "all":
             current_strategy = self._strategy_all
+        elif strategy == "random":
+            current_strategy = self._strategy_random
+        elif strategy == "ensemble":
+            current_strategy = self._strategy_ensemble
+        elif strategy == "random ensemble":
+            current_strategy = self._strategy_random_ensemble
         else:
             raise NotImplementedError(f"unknown training strategy: {strategy}")
 
@@ -83,18 +90,18 @@ class TrainBuilder():
             writer_context = self.writer.as_default()
 
         # run strategy
-        self.execute_index += 1
         with writer_context:
             log.info(f"training started with strategy: {strategy}")
             starttime = timeit.default_timer()
 
             try:
-                current_strategy(epochs)
+                current_strategy(update_steps, *args, **kwargs)
 
             except KeyboardInterrupt:
                 pass
 
             finally:
+                self.execute_index += 1
                 if self.writer is not None:
                     self.writer.flush()
 
@@ -102,7 +109,10 @@ class TrainBuilder():
             log.info(f"training done in {runtime/60/60:.2f} hours")
 
         return self
-    
+
+
+    # training helper functions
+
     def train_generator(self, label, real, noise, variables):
         generator : tf.keras.Model = self.model.generator
         wasserstein_distance : tf.keras.Model = self.model.wasserstein_distance
@@ -165,38 +175,10 @@ class TrainBuilder():
                 penalty,
                 step=step)
 
-    def _strategy_single(self, epochs):
-        dataset = self.data.dataset
 
-        generator : tf.keras.Model = self.model.generator
-        discriminator : tf.keras.Model = self.model.discriminator
+    # strategy implementations
 
-        generator_variables = generator.trainable_weights
-        discriminator_variables = discriminator.trainable_weights
-
-        for epoch in range(epochs):
-            for ii, (label, real, noise) in dataset.enumerate():
-
-                if ii % 6 == 5:
-                    # train generators
-                    discriminator.ensemble = 0
-                    for jj in range(generator.num_model):
-                        generator.ensemble = jj+1
-                        self.train_generator(
-                                label, real, noise, generator_variables)
-
-                else:
-                    # train discriminators
-                    generator.ensemble = 0
-                    for jj in range(discriminator.num_model):
-                        discriminator.ensemble = jj+1
-                        self.train_discriminator(
-                                label, real, noise, discriminator_variables)
-
-            # write summary after each epoch
-            self.make_summary(f"{self.execute_index} - single", epoch)
-
-    def _strategy_all(self, epochs):
+    def _strategy_single(self, update_steps):
         dataset = self.data.dataset
 
         generator : tf.keras.Model = self.model.generator
@@ -208,19 +190,190 @@ class TrainBuilder():
         generator_variables = generator.trainable_weights
         discriminator_variables = discriminator.trainable_weights
 
-        for epoch in range(epochs):
-            for ii, (label, real, noise) in dataset.enumerate():
+        for step, (label, real, noise) in dataset.repeat().enumerate():
+            if step >= update_steps:
+                break
 
-                if ii % 6 == 5:
-                    # train generators
+            if step % 100 == 0:
+                # write summary each 100 steps
+                self.make_summary(f"{self.execute_index} - single", step)
+
+            if step % 6 == 5:
+                # train generators
+                discriminator.ensemble = 0
+                for ensemble in range(generator.num_model):
+                    generator.ensemble = ensemble+1
                     self.train_generator(
                             label, real, noise, generator_variables)
 
-                else:
-                    # train discriminators
+            else:
+                # train discriminators
+                generator.ensemble = 0
+                for ensemble in range(discriminator.num_model):
+                    discriminator.ensemble = ensemble+1
                     self.train_discriminator(
                             label, real, noise, discriminator_variables)
 
-            # write summary after each epoch
-            self.make_summary(f"{self.execute_index} - all", epoch)
+        # write summary after each strategy
+        self.make_summary(f"{self.execute_index} - single", step)
+
+    def _strategy_all(self, update_steps):
+        dataset = self.data.dataset
+
+        generator : tf.keras.Model = self.model.generator
+        discriminator : tf.keras.Model = self.model.discriminator
+
+        generator.ensemble = 0
+        discriminator.ensemble = 0
+
+        generator_variables = generator.trainable_weights
+        discriminator_variables = discriminator.trainable_weights
+
+        for step, (label, real, noise) in dataset.repeat().enumerate():
+            if step >= update_steps:
+                break
+
+            if step % 100 == 0:
+                # write summary each 100 steps
+                self.make_summary(f"{self.execute_index} - all", step)
+                generator.ensemble = 0
+                discriminator.ensemble = 0
+
+            if step % 6 == 5:
+                # train generators
+                self.train_generator(
+                        label, real, noise, generator_variables)
+
+            else:
+                # train discriminators
+                self.train_discriminator(
+                        label, real, noise, discriminator_variables)
+
+        # write summary after each strategy
+        self.make_summary(f"{self.execute_index} - all", step)
+
+    def _strategy_random(self, update_steps):
+        dataset = self.data.dataset
+
+        generator : tf.keras.Model = self.model.generator
+        discriminator : tf.keras.Model = self.model.discriminator
+
+        generator.ensemble = 0
+        discriminator.ensemble = 0
+
+        generator_variables = generator.trainable_weights
+        discriminator_variables = discriminator.trainable_weights
+
+        rng = np.random.default_rng()
+        generator_ensemble = rng.choice(
+                a=np.array([True, False]),
+                size=(update_steps, generator.num_model))
+        discriminator_ensemble = rng.choice(
+                a=np.array([True, False]),
+                size=(update_steps, discriminator.num_model))
+
+        for step, (label, real, noise) in dataset.repeat().enumerate():
+            if step >= update_steps:
+                break
+
+            if step % 100 == 0:
+                # write summary each 100 steps
+                self.make_summary(f"{self.execute_index} - random", step)
+
+            if step % 6 == 5:
+                # train generators
+                generator.ensemble = generator_ensemble[step]
+                discriminator.ensemble = discriminator_ensemble[step]
+                self.train_generator(
+                        label, real, noise, generator_variables)
+
+            else:
+                # train discriminators
+                generator.ensemble = generator_ensemble[step]
+                discriminator.ensemble = discriminator_ensemble[step]
+                self.train_discriminator(
+                        label, real, noise, discriminator_variables)
+
+        # write summary after each strategy
+        self.make_summary(f"{self.execute_index} - random", step)
+
+    def _strategy_ensemble(self, update_steps):
+        dataset = self.data.dataset
+
+        generator : tf.keras.Model = self.model.generator
+        discriminator : tf.keras.Model = self.model.discriminator
+
+        generator.ensemble = 0
+        discriminator.ensemble = 0
+
+        generator_variables = generator.trainable_weights + [generator.ensemble_weights]
+        discriminator_variables = discriminator.trainable_weights + [discriminator.ensemble_weights]
+
+        for step, (label, real, noise) in dataset.repeat().enumerate():
+            if step >= update_steps:
+                break
+
+            if step % 100 == 0:
+                # write summary each 100 steps
+                self.make_summary(f"{self.execute_index} - ensemble", step)
+                generator.ensemble = 0
+                discriminator.ensemble = 0
+
+            if step % 6 == 5:
+                # train generators
+                self.train_generator(
+                        label, real, noise, generator_variables)
+
+            else:
+                # train discriminators
+                self.train_discriminator(
+                        label, real, noise, discriminator_variables)
+
+        # write summary after each strategy
+        self.make_summary(f"{self.execute_index} - ensemble", step)
+
+    def _strategy_random_ensemble(self, update_steps):
+        dataset = self.data.dataset
+
+        generator : tf.keras.Model = self.model.generator
+        discriminator : tf.keras.Model = self.model.discriminator
+
+        generator.ensemble = 0
+        discriminator.ensemble = 0
+
+        generator_variables = generator.trainable_weights + [generator.ensemble_weights]
+        discriminator_variables = discriminator.trainable_weights + [discriminator.ensemble_weights]
+
+        rng = np.random.default_rng()
+        generator_ensemble = rng.choice(
+                a=np.array([True, False]),
+                size=(update_steps, generator.num_model))
+        discriminator_ensemble = rng.choice(
+                a=np.array([True, False]),
+                size=(update_steps, discriminator.num_model))
+
+        for step, (label, real, noise) in dataset.repeat().enumerate():
+            if step >= update_steps:
+                break
+
+            if step % 100 == 0:
+                # write summary each 100 steps
+                self.make_summary(f"{self.execute_index} - random ensemble", step)
+
+            if step % 6 == 5:
+                # train generators
+                generator.ensemble = generator_ensemble[step]
+                discriminator.ensemble = discriminator_ensemble[step]
+                self.train_generator(
+                        label, real, noise, generator_variables)
+
+            else:
+                # train discriminators
+                generator.ensemble = generator_ensemble[step]
+                discriminator.ensemble = discriminator_ensemble[step]
+                self.train_discriminator(
+                        label, real, noise, discriminator_variables)
+
+        # write summary after each strategy
+        self.make_summary(f"{self.execute_index} - random ensemble", step)
 
