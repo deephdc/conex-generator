@@ -1,7 +1,6 @@
-import lazy_import
-
-lazy_import.lazy_module("src.utils")
 from . import utils
+
+import lazy_import
 
 lazy_import.lazy_module("src.data")
 from . import data
