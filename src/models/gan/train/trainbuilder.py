@@ -27,19 +27,19 @@ class TrainBuilder():
 
     def build(self):
         self.optimizer_generator = tf.keras.optimizers.Adam(
-                learning_rate=self.learning_rate_generator,
+                learning_rate=self._get_learning_rate_generator,
                 beta_1=0.5,
                 beta_2=0.9,)
 
         self.optimizer_discriminator = tf.keras.optimizers.Adam(
-                learning_rate=self.learning_rate_discriminator,
+                learning_rate=self._get_learning_rate_discriminator,
                 beta_1=0.5,
                 beta_2=0.9,)
 
         self.built = True
         return self
 
-    def summary_writer(self, path):
+    def add_summary_writer(self, path="."):
         summarypath = os.path.join(path, "tensorboard")
 
         if self.writer is not None:
@@ -58,6 +58,12 @@ class TrainBuilder():
 
         return self
 
+    def _get_learning_rate_generator(self):
+        return self.learning_rate_generator
+
+    def _get_learning_rate_discriminator(self):
+        return self.learning_rate_discriminator
+
     def execute(self, strategy, epochs):
         if not self.built:
             raise RuntimeError("TrainBuilder has not been built yet")
@@ -65,6 +71,8 @@ class TrainBuilder():
         # choose strategy
         if strategy == "single":
             current_strategy = self._strategy_single
+        elif strategy == "all":
+            current_strategy = self._strategy_all
         else:
             raise NotImplementedError(f"unknown training strategy: {strategy}")
 
@@ -75,6 +83,7 @@ class TrainBuilder():
             writer_context = self.writer.as_default()
 
         # run strategy
+        self.execute_index += 1
         with writer_context:
             log.info(f"training started with strategy: {strategy}")
             starttime = timeit.default_timer()
@@ -93,53 +102,33 @@ class TrainBuilder():
             log.info(f"training done in {runtime/60/60:.2f} hours")
 
         return self
-
-    def _train_generator(self,
-                        label,
-                        real,
-                        noise,
-                        generator_ensemble,
-                        discriminator_ensemble):
+    
+    def train_generator(self, label, real, noise, variables):
         generator : tf.keras.Model = self.model.generator
-        discriminator : tf.keras.Model = self.model.discriminator
         wasserstein_distance : tf.keras.Model = self.model.wasserstein_distance
 
         optimizer : tf.keras.optimizers.Optimizer = self.optimizer_generator
 
-        generator.ensemble = generator_ensemble
-        discriminator.ensemble = discriminator_ensemble
-
         with tf.GradientTape(watch_accessed_variables=False) as tape:
-            tape.watch(generator.trainable_weights)
+            tape.watch(variables)
 
             fake = generator([label, *noise])
             distance = wasserstein_distance([label, *real, *fake])
 
             loss = distance
 
-        gradient = tape.gradient(loss, generator.trainable_weights)
-        optimizer.apply_gradients(zip(gradient, generator.trainable_weights))
+        gradient = tape.gradient(loss, variables)
+        optimizer.apply_gradients(zip(gradient, variables))
 
-        return (loss, distance)
-
-    def _train_discriminator(self,
-                            label,
-                            real,
-                            noise,
-                            generator_ensemble,
-                            discriminator_ensemble):
+    def train_discriminator(self, label, real, noise, variables):
         generator : tf.keras.Model = self.model.generator
-        discriminator : tf.keras.Model = self.model.discriminator
         wasserstein_distance : tf.keras.Model = self.model.wasserstein_distance
         gradient_penalty : tf.keras.Model = self.model.gradient_penalty
 
         optimizer : tf.keras.optimizers.Optimizer = self.optimizer_discriminator
 
-        generator.ensemble = generator_ensemble
-        discriminator.ensemble = discriminator_ensemble
-
         with tf.GradientTape(watch_accessed_variables=False) as tape:
-            tape.watch(discriminator.trainable_weights)
+            tape.watch(variables)
 
             fake = generator([label, *noise])
             distance = wasserstein_distance([label, *real, *fake])
@@ -147,29 +136,19 @@ class TrainBuilder():
 
             loss = - distance + penalty
 
-        gradient = tape.gradient(loss, discriminator.trainable_weights)
-        optimizer.apply_gradients(zip(gradient, discriminator.trainable_weights))
+        gradient = tape.gradient(loss, variables)
+        optimizer.apply_gradients(zip(gradient, variables))
 
-        return (loss, distance, penalty)
-
-    def _make_summary(self,
-                     name,
-                     step,
-                     generator_ensemble,
-                     discriminator_ensemble):
+    def make_summary(self, name, step):
         dataset = self.data.dataset
 
         generator : tf.keras.Model = self.model.generator
-        discriminator : tf.keras.Model = self.model.discriminator
         wasserstein_distance : tf.keras.Model = self.model.wasserstein_distance
         gradient_penalty : tf.keras.Model = self.model.gradient_penalty
 
-        generator.ensemble = generator_ensemble
-        discriminator.ensemble = discriminator_ensemble
-
         distance = 0
         penalty = 0
-        for label, real, noise in dataset.take(10):
+        for label, real, noise in dataset.take(100):
             fake = generator([label, *noise])
             distance += wasserstein_distance([label, *real, *fake])
             penalty += gradient_penalty([label, *real, *fake])
@@ -177,42 +156,71 @@ class TrainBuilder():
         penalty /= 10
 
         tf.summary.scalar(
-                name + " - Wasserstein Distance",
+                "Wasserstein Distance - " + name,
                 distance,
                 step=step)
 
         tf.summary.scalar(
-                name + " - Gradient Penalty",
+                "Gradient Penalty - " + name,
                 penalty,
                 step=step)
 
     def _strategy_single(self, epochs):
-        self.execute_index += 1
-
         dataset = self.data.dataset
 
         generator : tf.keras.Model = self.model.generator
         discriminator : tf.keras.Model = self.model.discriminator
 
-        step = 0
+        generator_variables = generator.trainable_weights
+        discriminator_variables = discriminator.trainable_weights
 
         for epoch in range(epochs):
             for ii, (label, real, noise) in dataset.enumerate():
 
                 if ii % 6 == 5:
                     # train generators
+                    discriminator.ensemble = 0
                     for jj in range(generator.num_model):
-                        loss, distance = self._train_generator(
-                                label, real, noise, jj+1, 0)
+                        generator.ensemble = jj+1
+                        self.train_generator(
+                                label, real, noise, generator_variables)
 
                 else:
                     # train discriminators
+                    generator.ensemble = 0
                     for jj in range(discriminator.num_model):
-                        loss, distance, penalty = self._train_discriminator(
-                                label, real, noise, 0, jj+1)
+                        discriminator.ensemble = jj+1
+                        self.train_discriminator(
+                                label, real, noise, discriminator_variables)
 
             # write summary after each epoch
-            self._make_summary(f"{self.execute_index} - single",
-                              epoch, 0, 0)
+            self.make_summary(f"{self.execute_index} - single", epoch)
 
+    def _strategy_all(self, epochs):
+        dataset = self.data.dataset
+
+        generator : tf.keras.Model = self.model.generator
+        discriminator : tf.keras.Model = self.model.discriminator
+
+        generator.ensemble = 0
+        discriminator.ensemble = 0
+
+        generator_variables = generator.trainable_weights
+        discriminator_variables = discriminator.trainable_weights
+
+        for epoch in range(epochs):
+            for ii, (label, real, noise) in dataset.enumerate():
+
+                if ii % 6 == 5:
+                    # train generators
+                    self.train_generator(
+                            label, real, noise, generator_variables)
+
+                else:
+                    # train discriminators
+                    self.train_discriminator(
+                            label, real, noise, discriminator_variables)
+
+            # write summary after each epoch
+            self.make_summary(f"{self.execute_index} - all", epoch)
 
