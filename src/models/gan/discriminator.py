@@ -54,8 +54,8 @@ class BaseDiscriminator(tf.keras.Model):
                 initializer=tf.keras.initializers.Constant(True),
                 trainable=False,)
 
-        self.ensemble_weight = self.add_weight(
-                name="ensemble_weight",
+        self.ensemble_weights = self.add_weight(
+                name="ensemble_weights",
                 shape=(self.num_model,),
                 dtype=tf.float32,
                 initializer=tf.keras.initializers.Constant([1.0]*self.num_model),
@@ -120,7 +120,7 @@ class BaseDiscriminator(tf.keras.Model):
         zeros = tf.zeros((batchsize,1,))
         outputs = [zeros] * self.num_model
 
-        ensemble_weight = tf.math.log(tf.math.exp(self.ensemble_weight) + 1.0)
+        ensemble_weights = tf.math.log(tf.math.exp(self.ensemble_weights) + 1.0)
         used_ensemble_weight = 0.0
 
         for ii in range(self.num_model):
@@ -131,8 +131,8 @@ class BaseDiscriminator(tf.keras.Model):
         tensor = zeros
         for ii in range(self.num_model):
             if self._ensemble_var[ii]:
-                tensor += ensemble_weight[ii] * outputs[ii]
-                used_ensemble_weight += ensemble_weight[ii]
+                tensor += ensemble_weights[ii] * outputs[ii]
+                used_ensemble_weight += ensemble_weights[ii]
         tensor /= used_ensemble_weight
 
         return tensor
