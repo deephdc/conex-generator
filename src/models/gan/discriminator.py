@@ -92,10 +92,10 @@ class BaseDiscriminator(tf.keras.Model):
                 self._ensemble_var.assign(bool_list)
                 return
 
-        if isinstance(value, (list, tuple)):
+        if isinstance(value, (list, tuple, np.ndarray)):
             assert len(value) == self.num_model
             assert np.all([
-                isinstance(val, (bool, np.bool))
+                isinstance(val, (bool, np.bool, np.bool_))
                 for val in value
             ])
             self._ensemble_var.assign(value)
