@@ -72,12 +72,12 @@ class BaseGenerator(tf.keras.Model):
                 initializer=tf.keras.initializers.Constant(True),
                 trainable=False,)
 
-        self._ensemble_weight = self.add_weight(
+        self.ensemble_weight = self.add_weight(
                 name="ensemble_weight",
                 shape=(self.num_model,),
                 dtype=tf.float32,
                 initializer=tf.keras.initializers.Constant([1.0]*self.num_model),
-                trainable=True,)
+                trainable=False,)
 
     @property
     def ensemble(self):
@@ -132,7 +132,7 @@ class BaseGenerator(tf.keras.Model):
         zeros = tf.zeros((batchsize,self.depthlen,self.gen_features,))
         outputs = [zeros] * self.num_model
 
-        ensemble_weight = tf.math.log(tf.math.exp(self._ensemble_weight) + 1.0)
+        ensemble_weight = tf.math.log(tf.math.exp(self.ensemble_weight) + 1.0)
         used_ensemble_weight = 0.0
 
         for ii in range(self.num_model):
