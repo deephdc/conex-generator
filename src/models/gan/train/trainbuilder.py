@@ -23,8 +23,8 @@ class TrainBuilder():
         self.writer = None
 
         # default parameters
-        self.learning_rate_generator = 0.0001
-        self.learning_rate_discriminator = 0.0001
+        self.learning_rate_generator = 1e-4
+        self.learning_rate_discriminator = 1e-4
 
     def build(self):
         self.optimizer_generator = tf.keras.optimizers.Adam(
@@ -106,7 +106,7 @@ class TrainBuilder():
                     self.writer.flush()
 
             runtime = timeit.default_timer() - starttime
-            log.info(f"training done in {runtime/60/60:.2f} hours")
+            log.info(f"training done in {runtime/60/60:.2f} hours for {update_steps} steps")
 
         return self
 
@@ -144,7 +144,7 @@ class TrainBuilder():
             distance = wasserstein_distance([label, *real, *fake])
             penalty = gradient_penalty([label, *real, *fake])
 
-            loss = - distance + penalty
+            loss = - distance + 100*penalty
 
         gradient = tape.gradient(loss, variables)
         optimizer.apply_gradients(zip(gradient, variables))
@@ -162,8 +162,8 @@ class TrainBuilder():
             fake = generator([label, *noise])
             distance += wasserstein_distance([label, *real, *fake])
             penalty += gradient_penalty([label, *real, *fake])
-        distance /= 10
-        penalty /= 10
+        distance /= 100
+        penalty /= 100
 
         tf.summary.scalar(
                 "Wasserstein Distance - " + name,
