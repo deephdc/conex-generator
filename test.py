@@ -1,8 +1,8 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import src
-log = src.utils.getLogger(__name__, level="warning")
+log = src.utils.getLogger(__name__, level="info")
 
 import tensorflow as tf
 import numpy as np
@@ -13,12 +13,10 @@ import typing
 run = "run01"
 save_prefix = "test"
 cache_path = "/home/tmp/koepke/cache"
-epochs = 1
 batchsize = 512
 
 # input processing
 savepath = os.path.join(src.models.get_path(), save_prefix, run)
-logpath = os.path.join(savepath, "log")
 
 # get data
 import src.models.gan as gan
@@ -37,29 +35,23 @@ model = gan.train.ModelBuilder(data) \
 
 # prepare training
 training = gan.train.TrainBuilder(data, model) \
-        .learning_rate(0.0001, 0.0001) \
+        .learning_rate(1e-4, 1e-4) \
         .add_summary_writer(savepath) \
         .build()
 
 # execute training
 print("started training")
+start = timeit.default_timer()
 training.execute("single", 10)
 training.execute("random", 10)
 training.execute("all", 10)
 training.execute("random ensemble", 10)
 training.execute("ensemble", 10)
-
-exit(0)
-# train function
-start = timeit.default_timer()
-
 end = timeit.default_timer()
 print("training time", end-start)
-exit(0)
 
 # save model
 print("saving ...")
-gen.save(os.path.join(savepath, "generator"))
-dis.save(os.path.join(savepath, "discriminator"))
+model.save(savepath)
 print("done ...")
 
