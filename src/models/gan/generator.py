@@ -127,9 +127,9 @@ class BaseGenerator(tf.keras.Model):
         noise = inputs[1:]
 
         # run different generators
-        batchsize = label.shape[0]
+        current_batchsize = tf.shape(label)[0]
 
-        zeros = tf.zeros((batchsize,self.depthlen,self.gen_features,))
+        zeros = tf.zeros((current_batchsize,self.depthlen,self.gen_features,))
         outputs = [zeros] * self.num_model
 
         ensemble_weights = tf.math.log(tf.math.exp(self.ensemble_weights) + 1.0)

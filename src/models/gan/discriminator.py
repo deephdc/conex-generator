@@ -115,9 +115,9 @@ class BaseDiscriminator(tf.keras.Model):
         data = self.standardizer([data, mask,])
 
         # run different discriminators
-        batchsize = label.shape[0]
+        current_batchsize = tf.shape(label)[0]
 
-        zeros = tf.zeros((batchsize,1,))
+        zeros = tf.zeros((current_batchsize,1,))
         outputs = [zeros] * self.num_model
 
         ensemble_weights = tf.math.log(tf.math.exp(self.ensemble_weights) + 1.0)
