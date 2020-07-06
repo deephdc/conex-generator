@@ -66,16 +66,17 @@ class GradientPenalty(tf.keras.Model):
         gradnorm = tf.sqrt(gradsum_pd + gradsum_ed + 1e-6)
 
         # calculate dynamic lipschitz constant based actual input dimension
-        not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
-        not_nan1 = tf.math.logical_not(tf.math.is_nan(real[1]))
+        #not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
+        #not_nan1 = tf.math.logical_not(tf.math.is_nan(real[1]))
 
-        dims0 = tf.math.count_nonzero(not_nan0, axis=[1,2], dtype=tf.float32)
-        dims1 = tf.math.count_nonzero(not_nan1, axis=[1,2], dtype=tf.float32)
+        #dims0 = tf.math.count_nonzero(not_nan0, axis=[1,2], dtype=tf.float32)
+        #dims1 = tf.math.count_nonzero(not_nan1, axis=[1,2], dtype=tf.float32)
 
-        lipschitz_dynamic = tf.sqrt(dims0 + dims1)
+        #lipschitz_dynamic = tf.sqrt(dims0 + dims1)
 
         # calculate gradient penalty
-        gradient_penalty_batch = tf.abs(gradnorm - lipschitz_dynamic)
+        #gradient_penalty_batch = tf.abs(gradnorm - lipschitz_dynamic)
+        gradient_penalty_batch = tf.abs(gradnorm - self.lipschitz_constant)
         gradient_penalty = tf.math.reduce_mean(gradient_penalty_batch, axis=0)
 
         return gradient_penalty
