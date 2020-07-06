@@ -1,163 +1,85 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import src
-log = src.utils.getLogger(__name__, level="warning")
+log = src.utils.getLogger(__name__, level="info")
 
 import tensorflow as tf
 import numpy as np
 import timeit
-import typing
 
 # script input
-run = "run02"
-save_prefix = "test"
-cache_path = os.path.join("/home/tmp/koepke/cache", run)
-epochs = 1
-batchsize = 1024
+run = "run03"
+save_prefix = "gan/ensemble"
+cache_path = "/home/tmp/koepke/cache"
+batchsize = 512
 
 # input processing
 savepath = os.path.join(src.models.get_path(), save_prefix, run)
-logpath = os.path.join(savepath, "log")
 
 # get data
-data = src.data.processed.load_data(run)
-pd : tf.data.Dataset = data[0]
-ed : tf.data.Dataset = data[1]
-label : tf.data.Dataset = data[2]
-metadata : typing.Dict = data[3]
-
-# parse metadata
-numdata = metadata["length"]
-
-pd_maxdata = np.array(metadata["particle_distribution"]["max_data"],
-                      dtype=np.float32)
-ed_maxdata = np.array(metadata["energy_deposit"]["max_data"],
-                      dtype=np.float32)
-
-pd_depth = metadata["particle_distribution"]["depth"]
-pd_depthlen = len(pd_depth)
-ed_depth = metadata["energy_deposit"]["depth"]
-ed_depthlen = len(ed_depth)
-assert pd_depthlen == ed_depthlen
-depthlen = pd_depthlen
-
-pd_mindepthlen = metadata["particle_distribution"]["min_depthlen"]
-pd_mindepth = pd_depth[pd_mindepthlen-1]
-ed_mindepthlen = metadata["energy_deposit"]["min_depthlen"]
-ed_mindepth = ed_depth[ed_mindepthlen-1]
-assert pd_mindepthlen == ed_mindepthlen
-mindepthlen = pd_mindepthlen
-
-# prepare data
-def cast_to_float32(x):
-    return tf.cast(x, tf.float32)
-
-prefetchlen = int(3*1024*1024*1024 / (275 * 9 * 8)) # max 3 GB
-
-pd = pd.prefetch(prefetchlen)
-pd = pd.batch(prefetchlen//2) \
-        .map(cast_to_float32,
-             num_parallel_calls=tf.data.experimental.AUTOTUNE) \
-        .unbatch()
-pd = src.data.cache_dataset(pd, "pd", basepath=cache_path)
-pd = pd.prefetch(prefetchlen)
-
-ed = ed.prefetch(prefetchlen)
-ed = ed.batch(prefetchlen//2) \
-        .map(cast_to_float32,
-             num_parallel_calls=tf.data.experimental.AUTOTUNE) \
-        .unbatch()
-ed = src.data.cache_dataset(ed, "ed", basepath=cache_path)
-ed = ed.prefetch(prefetchlen)
-
-label = label.prefetch(prefetchlen)
-label = label.batch(prefetchlen//2) \
-        .map(cast_to_float32,
-             num_parallel_calls=tf.data.experimental.AUTOTUNE) \
-        .unbatch()
-label = src.data.cache_dataset(label, "label", basepath=cache_path)
-label = label.prefetch(prefetchlen)
-
-noise1 = src.data.random.uniform_dataset((100,))
-
-ds = tf.data.Dataset.zip((
-    label,
-    (pd, ed),
-    (noise1,)
-))
-ds : tf.data.Dataset = ds.shuffle(100000).batch(batchsize).prefetch(5)
-
-# create model
 import src.models.gan as gan
 
-gen = gan.BaseGenerator(depthlen, pd_maxdata, ed_maxdata)
-dis = gan.BaseDiscriminator(pd_maxdata, ed_maxdata)
-wd = gan.loss.WassersteinDistance(dis)
-gp = gan.loss.GradientPenalty(dis)
+data = gan.train.DataBuilder(run, batchsize) \
+        .prefetch("1 GB") \
+        .cast_to_float32() \
+        .cache(cache_path) \
+        .build()
 
-gopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
-dopt = tf.keras.optimizers.Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9)
+ds : tf.data.Dataset = data.dataset
 
-writer = tf.summary.create_file_writer(logpath)
+# create model
+model = gan.train.ModelBuilder(data) \
+        .build()
 
-# initialize and build once
-for label, real, noise in ds.take(1):
-    out1 = gen([label, *noise,])
-    out2 = dis([label, *real, *real,])
-    out3 = wd([label, *real, *out1,])
-    out4 = gp([label, *real, *out1,])
+# prepare training
+training = gan.train.TrainBuilder(data, model) \
+        .learning_rate(1e-4, 1e-4) \
+        .add_summary_writer(savepath) \
+        .build()
 
-# train function
-def train(dataset, gen, dis, wd, gp, gopt, dopt, epochs):
-    dataset = dataset.repeat(epochs)
-    for ii, (label, real, noise) in dataset.enumerate():
-        if ii % 5 == 4:
-            with tf.GradientTape(watch_accessed_variables=False) as tape:
-                tape.watch(gen.trainable_weights)
-                fake = gen([label, *noise,])
-                distance = wd([label, *real, *fake,])
-                loss = distance
-
-            tf.summary.scalar("Wasserstein Distance", distance, step=ii)
-
-            grads = tape.gradient(loss, gen.trainable_weights)
-            gopt.apply_gradients(zip(grads, gen.trainable_weights))
-
-        else:
-            with tf.GradientTape(watch_accessed_variables=False) as tape:
-                tape.watch(dis.trainable_weights)
-                fake = gen([label, *noise,])
-                distance = wd([label, *real, *fake,])
-                penalty = gp([label, *real, *fake,])
-                loss = - distance + penalty
-
-            tf.summary.scalar("Wasserstein Distance", distance, step=ii)
-            tf.summary.scalar("Gradient Penalty", penalty, step=ii)
-            tf.summary.scalar("Discriminator Loss", loss, step=ii)
-
-            grads = tape.gradient(loss, dis.trainable_weights)
-            dopt.apply_gradients(zip(grads, dis.trainable_weights))
-
-print("training ...")
+# execute training
+print("started training")
 start = timeit.default_timer()
-with writer.as_default():
-    try:
-        train(ds, gen, dis, wd, gp, gopt, dopt, epochs)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        writer.flush()
+
+# slowly increase learning rate
+training.learning_rate(1e-6, 1e-6).execute("single", 1000)
+training.learning_rate(2e-6, 2e-6).execute("single", 1000)
+training.learning_rate(4e-6, 4e-6).execute("single", 1000)
+training.learning_rate(1e-5, 1e-5).execute("single", 1000)
+training.learning_rate(2e-5, 2e-5).execute("single", 1000)
+training.learning_rate(4e-5, 4e-5).execute("single", 1000)
+
+# decorrelate submodels
+training.learning_rate(1e-4, 1e-4).execute("single", 10000)
+
+# random correlate submodels
+training.learning_rate(1e-5, 1e-5).execute("random", 5000)
+training.learning_rate(1e-4, 1e-4).execute("random", 5000)
+
+# correlate submodels
+training.learning_rate(1e-4, 1e-4).execute("all", 20000)
+
+# random weight submodels
+training.learning_rate(1e-5, 1e-5).execute("random ensemble", 5000)
+training.learning_rate(1e-4, 1e-4).execute("random ensemble", 5000)
+
+# weight submodels
+training.learning_rate(1e-4, 1e-4).execute("ensemble", 10000)
+
+# slowly decrease learning rate
+training.learning_rate(4e-5, 4e-5).execute("ensemble", 10000)
+training.learning_rate(2e-5, 2e-5).execute("ensemble", 10000)
+training.learning_rate(1e-5, 1e-5).execute("ensemble", 10000)
+training.learning_rate(4e-6, 4e-6).execute("ensemble", 10000)
+training.learning_rate(2e-6, 2e-6).execute("ensemble", 10000)
+training.learning_rate(1e-6, 1e-6).execute("ensemble", 10000)
+
 end = timeit.default_timer()
 print("training time", end-start)
 
 # save model
 print("saving ...")
-for label, real, noise in ds.take(1):
-    gen.predict([label, *noise,])
-    dis.predict([label, *real, *real,])
-
-gen.save(os.path.join(savepath, "generator"))
-dis.save(os.path.join(savepath, "discriminator"))
+model.save(savepath)
 print("done ...")
 
