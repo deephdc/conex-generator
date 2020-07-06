@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 
 import src.models.gan as gan
@@ -54,6 +55,24 @@ class ModelBuilder():
             self.discriminator.predict([label, *real, *real,])
             self.wasserstein_distance.predict([label, *real, *out1,])
             self.gradient_penalty.predict([label, *real, *out1,])
+
+        return self
+
+    def save(self, path):
+        savepath_generator = os.path.join(path, "generator")
+        savepath_discriminator = os.path.join(path, "discriminator")
+
+        self.generator.ensemble = 0
+        self.discriminator.ensemble = 0
+
+        self.generator.save(savepath_generator)
+        self.discriminator.save(savepath_generator)
+
+        return self
+
+    def feature_list(pd_feature_list, ed_feature_list):
+        self.pd_feature_list = pd_feature_list
+        self.ed_feature_list = ed_feature_list
 
         return self
 
