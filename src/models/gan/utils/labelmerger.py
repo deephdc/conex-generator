@@ -14,8 +14,7 @@ class LabelMerger(tf.keras.layers.Layer):
     def call(self, inputs, training=False):
         # normalize inputs
         particle = tf.cast(inputs[:,0], tf.int32)
-        particle_oh = tf.cast(tf.one_hot(particle, self._numparticle),
-                              tf.float32)
+        particle_oh = tf.one_hot(particle, self._numparticle, dtype=tf.float32)
         energy = inputs[:,1] / 1e10
         theta = inputs[:,2] / 90.0
         phi = inputs[:,3] / 180.0
