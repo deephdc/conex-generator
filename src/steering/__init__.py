@@ -1,7 +1,9 @@
-import lazy_import
-
 from .path import get_install_path, set_install_path
 
-lazy_import.lazy_module("src.steering.corsika")
+import os
+import lazy_import
+if "lazy_import" in os.environ:
+    lazy_import.lazy_module("src.steering.corsika")
+
 from . import corsika
 
