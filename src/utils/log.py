@@ -8,6 +8,8 @@ log_path = os.path.join(root_path, "log.txt")
 
 from .telegram import TelegramHandler
 
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+
 logging.basicConfig(
         level = logging.WARNING,
         format = f"%(levelname)-1.1s/%(asctime)s/{uuid.uuid4()}/%(name)s: %(message)s",
