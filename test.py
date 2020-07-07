@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import src
 log = src.utils.getLogger(__name__, level="info")
@@ -7,7 +7,6 @@ log = src.utils.getLogger(__name__, level="info")
 import tensorflow as tf
 import numpy as np
 import timeit
-import typing
 
 # script input
 run = "run01"

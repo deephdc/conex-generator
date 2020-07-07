@@ -150,7 +150,7 @@ class TrainBuilder():
         optimizer.apply_gradients(zip(gradient, variables))
 
     def make_summary(self, name, step):
-        dataset = self.data.dataset
+        dataset = self.data.dataset.take(100)
 
         generator : tf.keras.Model = self.model.generator
         wasserstein_distance : tf.keras.Model = self.model.wasserstein_distance
@@ -158,7 +158,7 @@ class TrainBuilder():
 
         distance = 0
         penalty = 0
-        for label, real, noise in dataset.take(100):
+        for label, real, noise in dataset:
             fake = generator([label, *noise])
             distance += wasserstein_distance([label, *real, *fake])
             penalty += gradient_penalty([label, *real, *fake])
@@ -179,7 +179,7 @@ class TrainBuilder():
     # strategy implementations
 
     def _strategy_single(self, update_steps):
-        dataset = self.data.dataset
+        dataset = self.data.dataset.take(update_steps).enumerate()
 
         generator : tf.keras.Model = self.model.generator
         discriminator : tf.keras.Model = self.model.discriminator
@@ -190,10 +190,7 @@ class TrainBuilder():
         generator_variables = generator.trainable_weights
         discriminator_variables = discriminator.trainable_weights
 
-        for step, (label, real, noise) in dataset.repeat().enumerate():
-            if step >= update_steps:
-                break
-
+        for step, (label, real, noise) in dataset:
             if step % 100 == 0:
                 # write summary each 100 steps
                 self.make_summary(f"{self.execute_index} - single", step)
@@ -218,7 +215,7 @@ class TrainBuilder():
         self.make_summary(f"{self.execute_index} - single", step)
 
     def _strategy_all(self, update_steps):
-        dataset = self.data.dataset
+        dataset = self.data.dataset.take(update_steps).enumerate()
 
         generator : tf.keras.Model = self.model.generator
         discriminator : tf.keras.Model = self.model.discriminator
@@ -229,10 +226,7 @@ class TrainBuilder():
         generator_variables = generator.trainable_weights
         discriminator_variables = discriminator.trainable_weights
 
-        for step, (label, real, noise) in dataset.repeat().enumerate():
-            if step >= update_steps:
-                break
-
+        for step, (label, real, noise) in dataset:
             if step % 100 == 0:
                 # write summary each 100 steps
                 self.make_summary(f"{self.execute_index} - all", step)
@@ -253,7 +247,7 @@ class TrainBuilder():
         self.make_summary(f"{self.execute_index} - all", step)
 
     def _strategy_random(self, update_steps):
-        dataset = self.data.dataset
+        dataset = self.data.dataset.take(update_steps).enumerate()
 
         generator : tf.keras.Model = self.model.generator
         discriminator : tf.keras.Model = self.model.discriminator
@@ -272,10 +266,7 @@ class TrainBuilder():
                 a=np.array([True, False]),
                 size=(update_steps, discriminator.num_model))
 
-        for step, (label, real, noise) in dataset.repeat().enumerate():
-            if step >= update_steps:
-                break
-
+        for step, (label, real, noise) in dataset:
             if step % 100 == 0:
                 # write summary each 100 steps
                 self.make_summary(f"{self.execute_index} - random", step)
@@ -298,7 +289,7 @@ class TrainBuilder():
         self.make_summary(f"{self.execute_index} - random", step)
 
     def _strategy_ensemble(self, update_steps):
-        dataset = self.data.dataset
+        dataset = self.data.dataset.take(update_steps).enumerate()
 
         generator : tf.keras.Model = self.model.generator
         discriminator : tf.keras.Model = self.model.discriminator
@@ -309,10 +300,7 @@ class TrainBuilder():
         generator_variables = generator.trainable_weights + [generator.ensemble_weights]
         discriminator_variables = discriminator.trainable_weights + [discriminator.ensemble_weights]
 
-        for step, (label, real, noise) in dataset.repeat().enumerate():
-            if step >= update_steps:
-                break
-
+        for step, (label, real, noise) in dataset:
             if step % 100 == 0:
                 # write summary each 100 steps
                 self.make_summary(f"{self.execute_index} - ensemble", step)
@@ -333,7 +321,7 @@ class TrainBuilder():
         self.make_summary(f"{self.execute_index} - ensemble", step)
 
     def _strategy_random_ensemble(self, update_steps):
-        dataset = self.data.dataset
+        dataset = self.data.dataset.take(update_steps).enumerate()
 
         generator : tf.keras.Model = self.model.generator
         discriminator : tf.keras.Model = self.model.discriminator
@@ -352,10 +340,7 @@ class TrainBuilder():
                 a=np.array([True, False]),
                 size=(update_steps, discriminator.num_model))
 
-        for step, (label, real, noise) in dataset.repeat().enumerate():
-            if step >= update_steps:
-                break
-
+        for step, (label, real, noise) in dataset:
             if step % 100 == 0:
                 # write summary each 100 steps
                 self.make_summary(f"{self.execute_index} - random ensemble", step)

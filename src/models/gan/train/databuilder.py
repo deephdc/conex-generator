@@ -62,6 +62,7 @@ class DataBuilder():
 
         self.dataset : tf.data.Dataset = self.dataset \
                 .shuffle(100000) \
+                .repeat() \
                 .batch(self.batchsize) \
                 .prefetch(5)
 
