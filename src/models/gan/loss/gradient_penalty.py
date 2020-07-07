@@ -6,9 +6,10 @@ from src.models.gan import utils
 
 class GradientPenalty(tf.keras.Model):
 
-    def __init__(self, discriminator, pd_maxdata=None, ed_maxdata=None, **kwargs):
+    def __init__(self, discriminator, pd_maxdata=None, ed_maxdata=None, lp_dynamic=True, **kwargs):
         super().__init__(**kwargs)
 
+        self.lp_dynamic = lp_dynamic
         self.discriminator = discriminator
 
         if pd_maxdata is None:
@@ -65,18 +66,22 @@ class GradientPenalty(tf.keras.Model):
 
         gradnorm = tf.sqrt(gradsum_pd + gradsum_ed + 1e-6)
 
-        # calculate dynamic lipschitz constant based actual input dimension
-        #not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
-        #not_nan1 = tf.math.logical_not(tf.math.is_nan(real[1]))
+        if self.lp_dynamic:
+            # calculate dynamic lipschitz constant based on actual input dimension
+            not_nan0 = tf.math.logical_not(tf.math.is_nan(real[0]))
+            not_nan1 = tf.math.logical_not(tf.math.is_nan(real[1]))
 
-        #dims0 = tf.math.count_nonzero(not_nan0, axis=[1,2], dtype=tf.float32)
-        #dims1 = tf.math.count_nonzero(not_nan1, axis=[1,2], dtype=tf.float32)
+            dims0 = tf.math.count_nonzero(not_nan0, axis=[1,2], dtype=tf.float32)
+            dims1 = tf.math.count_nonzero(not_nan1, axis=[1,2], dtype=tf.float32)
 
-        #lipschitz_dynamic = tf.sqrt(dims0 + dims1)
+            lipschitz_dynamic = tf.sqrt(dims0 + dims1)
+
+            gradient_penalty_batch = tf.square(gradnorm - lipschitz_dynamic)
+        else:
+            # use fixed lipschitz constant
+            gradient_penalty_batch = tf.square(gradnorm - self.lipschitz_constant)
 
         # calculate gradient penalty
-        #gradient_penalty_batch = tf.abs(gradnorm - lipschitz_dynamic)
-        gradient_penalty_batch = tf.abs(gradnorm - self.lipschitz_constant)
         gradient_penalty = tf.math.reduce_mean(gradient_penalty_batch, axis=0)
 
         return gradient_penalty
