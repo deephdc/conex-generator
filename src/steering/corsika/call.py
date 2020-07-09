@@ -6,7 +6,7 @@ import queue
 import traceback
 import src.utils
 
-from . import get_run_path, get_corsika_path
+from . import get_run_path, get_corsika_binary
 from . import get_long_filepath, get_steering_filepath
 from . import write_steering_file
 from . import read_long_file
@@ -31,7 +31,7 @@ def call(
         clean = False):
 
     runpath = get_run_path()
-    coriska_path = get_corsika_path()
+    coriska_path = get_corsika_binary()
     coriska_file = os.path.split(coriska_path)[-1]
     run = find_run(run)
 
