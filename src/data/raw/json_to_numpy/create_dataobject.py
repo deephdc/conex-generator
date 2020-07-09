@@ -104,6 +104,25 @@ def create_dataobject(filename, run, expand_depth):
             np.nan,
             dtype=np.float)
 
+    # create cutbin placeholders
+    data_pd_cut = np.full(
+            [
+                numdata,
+                2,
+                len(numpy_data_layout["particle_distribution"]),
+            ],
+            np.nan,
+            dtype=np.float)
+
+    data_ed_cut = np.full(
+            [
+                numdata,
+                2,
+                len(numpy_data_layout["energy_deposit"]),
+            ],
+            np.nan,
+            dtype=np.float)
+
     # create label placeholder
     label = np.full(
             [
@@ -125,6 +144,9 @@ def create_dataobject(filename, run, expand_depth):
                 ])
         for curkey, curindex in numpy_data_layout[curfeature].items():
             data_pd[ii, 0:curdepthlen, curindex] = value[curfeature][curkey][0:curdepthlen]
+            if "cutbin" in value:
+                data_pd_cut[ii, :, curindex] = value["cutbin"][curfeature][curkey][:]
+
 
         # write energy deposit
         curfeature = "energy_deposit"
@@ -135,6 +157,8 @@ def create_dataobject(filename, run, expand_depth):
                 ])
         for curkey, curindex in numpy_data_layout[curfeature].items():
             data_ed[ii, 0:curdepthlen, curindex] = value[curfeature][curkey][0:curdepthlen]
+            if "cutbin" in value:
+                data_ed_cut[ii, :, curindex] = value["cutbin"][curfeature][curkey][:]
 
         # write labels
         for curkey, curindex in numpy_label_layout.items():
@@ -167,6 +191,7 @@ def create_dataobject(filename, run, expand_depth):
             "particle_distribution": {
                 "depth": depth_pd.tolist(),
                 "data": data_pd,
+                "cutbin": data_pd_cut,
                 "layout": numpy_data_layout["particle_distribution"],
                 "number_of_features": data_pd.shape[2],
                 "max_data": np.nanmax(data_pd, axis=(0,1)).tolist(),
@@ -176,6 +201,7 @@ def create_dataobject(filename, run, expand_depth):
             "energy_deposit": {
                 "depth": depth_ed.tolist(),
                 "data": data_ed,
+                "cutbin": data_ed_cut,
                 "layout": numpy_data_layout["energy_deposit"],
                 "number_of_features": data_ed.shape[2],
                 "max_data": np.nanmax(data_ed, axis=(0,1)).tolist(),

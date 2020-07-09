@@ -23,4 +23,5 @@ import src
 src.data.clear_run(run)
 src.data.raw.convert_run(run, expand_depth=expand_depth)
 src.data.interim.align_run(run, expand_depth=expand_depth)
+src.data.interim.clear_run(run)
 

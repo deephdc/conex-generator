@@ -69,6 +69,16 @@ def merge_run(run, expand_depth, overwrite=False):
     np.save(filepath, label, fix_imports=False)
     del(label)
 
+    # write cutbin
+    cut_pd, cut_ed = merge_cutbin(metadata, runpath)
+    filepath_pd = os.path.join(outpath, "cutbin_particle_distribution.npy")
+    filepath_ed = os.path.join(outpath, "cutbin_energy_deposit.npy")
+    log.info("writing %s.npy to disk", "cutbin")
+    np.save(filepath_pd, cut_pd, fix_imports=False)
+    np.save(filepath_ed, cut_ed, fix_imports=False)
+    del(cut_pd)
+    del(cut_ed)
+
     # write metadata
     meta = create_metadata(metadata, run, expand_depth)
     meta["particle_distribution"]["depth"] = depth_pd.tolist()
@@ -124,6 +134,43 @@ def merge_label(metadata, runpath):
         curindex += len(temp)
 
     return data
+
+
+def merge_cutbin(metadata, runpath):
+    log.info("merging numpy files for cutbin")
+
+    # get numdata
+    numdata = 0
+    for value in metadata:
+        numdata += value["length"]
+
+    # merge pd cutbin
+    numchannel = metadata[0]["particle_distribution"]["number_of_features"]
+
+    data_pd = np.full((numdata, 2, numchannel), np.nan, dtype=np.float)
+    curindex = 0
+    for value in metadata:
+        jsonfile = value["json_file"]
+        timestamp = jsonfile.split("_")[-1].split(".json")[0]
+        filepath = os.path.join(runpath, "cutbin_particle_distribution_" + timestamp + ".npy")
+        temp = np.load(filepath)
+        data_pd[curindex:curindex+len(temp),:,:] = temp
+        curindex += len(temp)
+
+    # merge ed cutbin
+    numchannel = metadata[0]["energy_deposit"]["number_of_features"]
+
+    data_ed = np.full((numdata, 2, numchannel), np.nan, dtype=np.float)
+    curindex = 0
+    for value in metadata:
+        jsonfile = value["json_file"]
+        timestamp = jsonfile.split("_")[-1].split(".json")[0]
+        filepath = os.path.join(runpath, "cutbin_energy_deposit_" + timestamp + ".npy")
+        temp = np.load(filepath)
+        data_ed[curindex:curindex+len(temp),:,:] = temp
+        curindex += len(temp)
+
+    return (data_pd, data_ed)
 
 
 def create_metadata(metadata, run, expand_depth):

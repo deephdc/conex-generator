@@ -75,7 +75,7 @@ def read_long_file(filepath):
 
     pd_list = np.transpose(particle_distribution_list, (0,2,1))
     ed_list = np.transpose(energy_deposit_list, (0,2,1))
-    return (pd_list[:,:,0:-2], ed_list[:,:,0:-2])
+    return (pd_list, ed_list)
 
 
 def make_dataobject(particle, energy, theta, phi, obslevel,
@@ -95,29 +95,57 @@ def make_dataobject(particle, energy, theta, phi, obslevel,
                 "theta": theta,
                 "phi": phi,
                 "obslevel": obslevel,
+
                 "particle_distribution": {
-                    "depth":     particle_distribution_list[ii,0].tolist(),
-                    "gamma":     particle_distribution_list[ii,1].tolist(),
-                    "positron":  particle_distribution_list[ii,2].tolist(),
-                    "electron":  particle_distribution_list[ii,3].tolist(),
-                    "mup":       particle_distribution_list[ii,4].tolist(),
-                    "mum":       particle_distribution_list[ii,5].tolist(),
-                    "hadron":    particle_distribution_list[ii,6].tolist(),
-                    "charged":   particle_distribution_list[ii,7].tolist(),
-                    "nuclei":    particle_distribution_list[ii,8].tolist(),
-                    "cherenkov": particle_distribution_list[ii,9].tolist(),
+                    "depth":     particle_distribution_list[ii,0,0:-2].tolist(),
+                    "gamma":     particle_distribution_list[ii,1,0:-2].tolist(),
+                    "positron":  particle_distribution_list[ii,2,0:-2].tolist(),
+                    "electron":  particle_distribution_list[ii,3,0:-2].tolist(),
+                    "mup":       particle_distribution_list[ii,4,0:-2].tolist(),
+                    "mum":       particle_distribution_list[ii,5,0:-2].tolist(),
+                    "hadron":    particle_distribution_list[ii,6,0:-2].tolist(),
+                    "charged":   particle_distribution_list[ii,7,0:-2].tolist(),
+                    "nuclei":    particle_distribution_list[ii,8,0:-2].tolist(),
+                    "cherenkov": particle_distribution_list[ii,9,0:-2].tolist(),
                 },
                 "energy_deposit": {
-                    "depth":     energy_deposit_list[ii,0].tolist(),
-                    "gamma":     energy_deposit_list[ii,1].tolist(),
-                    "em_ioniz":  energy_deposit_list[ii,2].tolist(),
-                    "em_cut":    energy_deposit_list[ii,3].tolist(),
-                    "mu_ioniz":  energy_deposit_list[ii,4].tolist(),
-                    "mu_cut":    energy_deposit_list[ii,5].tolist(),
-                    "ha_ioniz":  energy_deposit_list[ii,6].tolist(),
-                    "ha_cut":    energy_deposit_list[ii,7].tolist(),
-                    "neutrino":  energy_deposit_list[ii,8].tolist(),
-                    "sum":       energy_deposit_list[ii,9].tolist(),
+                    "depth":     energy_deposit_list[ii,0,0:-2].tolist(),
+                    "gamma":     energy_deposit_list[ii,1,0:-2].tolist(),
+                    "em_ioniz":  energy_deposit_list[ii,2,0:-2].tolist(),
+                    "em_cut":    energy_deposit_list[ii,3,0:-2].tolist(),
+                    "mu_ioniz":  energy_deposit_list[ii,4,0:-2].tolist(),
+                    "mu_cut":    energy_deposit_list[ii,5,0:-2].tolist(),
+                    "ha_ioniz":  energy_deposit_list[ii,6,0:-2].tolist(),
+                    "ha_cut":    energy_deposit_list[ii,7,0:-2].tolist(),
+                    "neutrino":  energy_deposit_list[ii,8,0:-2].tolist(),
+                    "sum":       energy_deposit_list[ii,9,0:-2].tolist(),
+                },
+                
+                "cutbin": {
+                    "particle_distribution": {
+                        "depth":     particle_distribution_list[ii,0,-2:].tolist(),
+                        "gamma":     particle_distribution_list[ii,1,-2:].tolist(),
+                        "positron":  particle_distribution_list[ii,2,-2:].tolist(),
+                        "electron":  particle_distribution_list[ii,3,-2:].tolist(),
+                        "mup":       particle_distribution_list[ii,4,-2:].tolist(),
+                        "mum":       particle_distribution_list[ii,5,-2:].tolist(),
+                        "hadron":    particle_distribution_list[ii,6,-2:].tolist(),
+                        "charged":   particle_distribution_list[ii,7,-2:].tolist(),
+                        "nuclei":    particle_distribution_list[ii,8,-2:].tolist(),
+                        "cherenkov": particle_distribution_list[ii,9,-2:].tolist(),
+                    },
+                    "energy_deposit": {
+                        "depth":     energy_deposit_list[ii,0,-2:].tolist(),
+                        "gamma":     energy_deposit_list[ii,1,-2:].tolist(),
+                        "em_ioniz":  energy_deposit_list[ii,2,-2:].tolist(),
+                        "em_cut":    energy_deposit_list[ii,3,-2:].tolist(),
+                        "mu_ioniz":  energy_deposit_list[ii,4,-2:].tolist(),
+                        "mu_cut":    energy_deposit_list[ii,5,-2:].tolist(),
+                        "ha_ioniz":  energy_deposit_list[ii,6,-2:].tolist(),
+                        "ha_cut":    energy_deposit_list[ii,7,-2:].tolist(),
+                        "neutrino":  energy_deposit_list[ii,8,-2:].tolist(),
+                        "sum":       energy_deposit_list[ii,9,-2:].tolist(),
+                    },
                 },
             }
             for ii in range(len(particle_distribution_list))

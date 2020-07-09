@@ -74,6 +74,11 @@ def align_run(run, expand_depth, overwrite=False):
     for meta in metadata:
         copy_label(meta, runpath, outpath)
 
+    # write cutbin
+    log.info("copying %s.npy files", "cutbin")
+    for meta in metadata:
+        copy_cutbin(meta, runpath, outpath)
+
     # write metadata
     meta = create_metadata(metadata, run, expand_depth)
     meta["particle_distribution"]["depth"] = depth_pd.tolist()
@@ -109,5 +114,20 @@ def copy_label(meta, runpath, outpath):
     timestamp = jsonfile.split("_")[-1].split(".json")[0]
     filepath = os.path.join(runpath, "label" + "_" + timestamp + ".npy")
     copypath = os.path.join(outpath, "label" + "_" + timestamp + ".npy")
+    shutil.copyfile(filepath, copypath)
+
+
+def copy_cutbin(meta, runpath, outpath):
+    jsonfile = meta["json_file"]
+    timestamp = jsonfile.split("_")[-1].split(".json")[0]
+
+    # copy pd cutbin
+    filepath = os.path.join(runpath, "cutbin_particle_distribution" + "_" + timestamp + ".npy")
+    copypath = os.path.join(outpath, "cutbin_particle_distribution" + "_" + timestamp + ".npy")
+    shutil.copyfile(filepath, copypath)
+
+    # copy ed cutbin
+    filepath = os.path.join(runpath, "cutbin_energy_deposit" + "_" + timestamp + ".npy")
+    copypath = os.path.join(outpath, "cutbin_energy_deposit" + "_" + timestamp + ".npy")
     shutil.copyfile(filepath, copypath)
 

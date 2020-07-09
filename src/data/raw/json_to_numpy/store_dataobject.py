@@ -38,6 +38,24 @@ def store_dataobject(dataobject, overwrite=False):
         np.save(curfilepath, dataobject[curfeature].pop("data"),
                 fix_imports=False)
 
+    # write cutbin files
+    features = ["particle_distribution", "energy_deposit"]
+    for curfeature in features:
+        curfile = "cutbin_" + curfeature + "_" + timestamp + ".npy"
+        curfilepath = os.path.join(runpath, curfile)
+        log.info("writing %s to disk", curfile)
+        if os.path.isfile(curfilepath):
+            if not overwrite:
+                msg = f"{curfilepath} already exists - cannot overwrite"
+                log.error(msg)
+                raise FileExistsError(msg)
+            else:
+                msg = f"overwrite of {curfilepath}"
+                log.warning(msg)
+                os.remove(curfilepath)
+        np.save(curfilepath, dataobject[curfeature].pop("cutbin"),
+                fix_imports=False)
+
     # write metadata
     curfile = "metadata_" + timestamp + ".json"
     curfilepath = os.path.join(runpath, curfile)
