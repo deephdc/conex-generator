@@ -66,7 +66,7 @@ class ModelBuilder():
         self.discriminator.ensemble = 0
 
         self.generator.save(savepath_generator)
-        self.discriminator.save(savepath_generator)
+        self.discriminator.save(savepath_discriminator)
 
         return self
 
