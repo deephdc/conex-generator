@@ -98,7 +98,11 @@ class BaseDiscriminator(tf.keras.Model):
                 isinstance(val, (bool, np.bool, np.bool_))
                 for val in value
             ])
-            self._ensemble_var.assign(value)
+            if not np.any(value):
+                bool_list = [True for _ in range(self.num_model)]
+                self._ensemble_var.assign(bool_list)
+            else:
+                self._ensemble_var.assign(value)
             return
 
         raise TypeError("unsupported type for model selection")
