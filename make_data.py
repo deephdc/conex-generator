@@ -49,7 +49,7 @@ random.seed()
 log = src.utils.getLogger(__name__)
 src.steering.corsika.set_version(version)
 src.steering.corsika.set_binary(binary)
-log.info("running corsika from %s", src.steering.corsika.get_binary())
+log.warning("running corsika from %s", src.steering.corsika.get_binary())
 
 particle_list = src.steering.corsika.get_particle_list()
 particle_list.pop("gamma", None)
@@ -103,4 +103,6 @@ alldata = src.steering.corsika.get_data_distributed(
 
 # store data
 src.data.raw.store_data(alldata, rawfolder)
+
+log.warning("make_data.py done")
 
