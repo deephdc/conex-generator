@@ -7,10 +7,14 @@ log = src.utils.getLogger(__name__)
 
 
 # setup path and runpath
-search_expr = os.path.join(get_install_path(), "corsika-*")
-corsika_paths = glob.glob(search_expr)
-corsika_paths.sort()
-corsika_path = corsika_paths[-1]
+try:
+    search_expr = os.path.join(get_install_path(), "corsika-*")
+    corsika_paths = glob.glob(search_expr)
+    corsika_paths.sort()
+    corsika_path = corsika_paths[-1]
+except:
+    corsika_path = None
+    log.warning("cannot find any corsika version")
 
 def get_path():
     return corsika_path
@@ -23,9 +27,8 @@ def set_version(version):
     newpath = os.path.join(get_install_path(), "corsika-" + version)
     if os.path.isdir(newpath):
         corsika_path = newpath
-        binary = os.path.split(get_binary())[-1].split("_", 1)[-1]
-        print(binary)
         try:
+            binary = os.path.split(get_binary())[-1].split("_", 1)[-1]
             set_binary(binary)
         except RuntimeError:
             log.warning(f"cannot find corresponding binary for new corsika version {version}")
@@ -34,10 +37,14 @@ def set_version(version):
 
 
 # setup binary path
-search_expr = os.path.join(get_run_path(), "corsika*Linux_*")
-corsika_filenames = glob.glob(search_expr)
-corsika_filenames.sort()
-corsika_filename = corsika_filenames[-1]
+try:
+    search_expr = os.path.join(get_run_path(), "corsika*Linux_*")
+    corsika_filenames = glob.glob(search_expr)
+    corsika_filenames.sort()
+    corsika_filename = corsika_filenames[-1]
+except:
+    corsika_path = None
+    log.warning("cannot find any corsika binary")
 
 def get_binary():
     runpath = get_run_path()
@@ -55,7 +62,7 @@ def set_binary(binary):
     corsika_filenames = glob.glob(search_expr)
     corsika_filenames.sort()
     if len(corsika_filenames) > 0:
-        corsika_filename = corsika_filenames[0]
+        corsika_filename = corsika_filenames[-1]
         return
     
     raise RuntimeError(f"cannot find corsika binary {binary}")

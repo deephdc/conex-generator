@@ -21,16 +21,35 @@ parser.add_argument(
         type=str,
         help="raw folder at which data will be stored"
         )
+parser.add_argument(
+        "--binary",
+        type=str,
+        default="EPOS",
+        help="corsika binary (glob-)expression"
+        )
+parser.add_argument(
+        "--version",
+        type=str,
+        default="latest",
+        help="corsika version"
+        )
 args = parser.parse_args()
 
 numruns = args.nruns
 showerperrun = args.nshower
 numthreads = args.nthreads
 rawfolder = args.store
+binary = args.binary
+version = args.version
 
 import src
 import random
 random.seed()
+
+log = src.utils.getLogger(__name__)
+src.steering.corsika.set_version(version)
+src.steering.corsika.set_binary(binary)
+log.info("running corsika from %s", src.steering.corsika.get_binary())
 
 particle_list = src.steering.corsika.get_particle_list()
 particle_list.pop("gamma", None)
