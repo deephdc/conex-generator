@@ -1,6 +1,8 @@
 import os
 import random
 from . import get_run_path
+from . import get_steering_options
+from . import get_binary
 import src.utils
 
 log = src.utils.getLogger(__name__)
@@ -64,6 +66,12 @@ def write_steering_file(
         if "OBSLEV" in line:
             new_lines[ii] = "{:7} {:<50}\n".format("OBSLEV", "%.9e" % (obslevel))
             continue
+
+    # apply custom steering options
+    steering_options = get_steering_options()
+    for k, v in steering_options.items():
+        if k in get_binary():
+            new_lines = v + new_lines
 
     log.info(f"writing steering file {filename}")
     with open(filepath, "w") as file:

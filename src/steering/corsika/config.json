@@ -6,5 +6,20 @@
         "helium": 402,
         "oxygen": 1608,
         "iron": 5626
+    },
+
+    "steering": {
+        "EPOS": [
+            "EPOPAR input ../epos/epos.param        !initialization input file for epos\n",
+            "EPOPAR fname inics ../epos/epos.inics  !initialization input file for epos\n",
+            "EPOPAR fname iniev ../epos/epos.iniev  !initialization input file for epos\n",
+            "EPOPAR fname initl ../epos/epos.initl  !initialization input file for epos\n",
+            "EPOPAR fname inirj ../epos/epos.inirj  !initialization input file for epos\n",
+            "EPOPAR fname inihy ../epos/epos.ini1b  !initialization input file for epos\n",
+            "EPOPAR fname check none                !dummy output file for epos\n",
+            "EPOPAR fname histo none                !dummy output file for epos\n",
+            "EPOPAR fname data  none                !dummy output file for epos\n",
+            "EPOPAR fname copy  none                !dummy output file for epos\n"
+        ]
     }
 }

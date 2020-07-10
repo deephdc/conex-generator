@@ -13,3 +13,7 @@ def get_config():
 def get_particle_list():
     return dict(config["particle_list"])
 
+
+def get_steering_options():
+    return dict(config["steering"])
+

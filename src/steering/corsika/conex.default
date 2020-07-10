@@ -1,4 +1,4 @@
-RUNNR   1                              run number
+RUNNR   1337                           run number
 NSHOW   1                              number of showers to generate
 PRMPAR  14                             prim. particle (1=gamma, 14=proton, ...)
 ESLOPE  -1.0                           slope of primary energy spectrum

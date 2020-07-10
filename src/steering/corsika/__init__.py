@@ -1,5 +1,5 @@
 from .path import get_path, get_run_path, get_binary, set_version, set_binary
-from .config import get_particle_list
+from .config import get_particle_list, get_steering_options
 from .steering_file import write_steering_file
 from .steering_file import get_steering_filepath
 from .long_file import read_long_file
