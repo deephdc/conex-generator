@@ -33,6 +33,13 @@ parser.add_argument(
         default="latest",
         help="corsika version"
         )
+parser.add_argument(
+        "--clean",
+        action="store_const",
+        const=True,
+        default=False,
+        help="clean corsika run environment"
+        )
 args = parser.parse_args()
 
 numruns = args.nruns
@@ -41,6 +48,7 @@ numthreads = args.nthreads
 rawfolder = args.store
 binary = args.binary
 version = args.version
+cleanenv = args.clean
 
 import src
 import random
@@ -56,7 +64,9 @@ particle_list.pop("gamma", None)
 particle_list.pop("electron", None)
 print(particle_list)
 
-src.steering.corsika.clean_env()
+if cleanenv:
+    log.warning("cleaning corsika run environment")
+    src.steering.corsika.clean_env()
 
 # physical parameters
 energy_range = [17, 19]
