@@ -1,8 +1,4 @@
 import numpy as np
-from scipy.spatial.distance import cdist
-from scipy.optimize import linear_sum_assignment
-import ot
-import matplotlib.pyplot as plt
 
 
 def histogram_generator(data1, data2, bins=30):
@@ -109,36 +105,7 @@ def correlation_histogram_generator(xdata1, ydata1, xdata2, ydata2, bins=30, spa
                     "ycenters": ycenters.astype(np.float),
                     "xedges": xbin_edges[:,ii].astype(np.float),
                     "yedges": ybin_edges[:,jj].astype(np.float),
-                    "index": (ii, jj),
+                    "xindex": ii,
+                    "yindex": jj,
             }
-
-
-if __name__ == "__main__":
-    shape = (10000, 1)
-    npoints = np.product(shape)
-
-    xdata1 = np.arange(1000).reshape(1000,1)
-    ydata1 = np.arange(1000).reshape(1000,1)
-
-    xdata2 = np.arange(1000).reshape(1000,1)
-    ydata2 = np.arange(1000).reshape(1000,1)
-
-    retval = correlation_histogram_generator(xdata1, ydata1, xdata2, ydata2)
-    retval = list(retval)
-
-    hists = retval[0]["histograms"]
-    xcenters = retval[0]["xcenters"]
-    ycenters = retval[0]["ycenters"]
-
-    xedges = retval[0]["xedges"]
-    yedges = retval[0]["yedges"]
-
-    plt.figure()
-    plt.pcolormesh(xedges, yedges, hists[0].T)
-    plt.figure()
-    plt.pcolormesh(xedges, yedges, hists[1].T)
-
-    #M = cdist(centers.reshape(30,1), centers.reshape(30,1))
-    #wd = ot.emd2(hists[0], hists[1], M)
-    #print(wd)
 
