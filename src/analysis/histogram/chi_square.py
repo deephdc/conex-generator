@@ -21,18 +21,3 @@ def chi_square_distance(histograms, normalize=True, **kwargs):
 
     return np.sum(hquotient) / 2
 
-
-if __name__ == "__main__":
-    import generators
-
-    xdata1 = np.random.uniform(0,1,10000).reshape(10000,1)
-    ydata1 = np.random.uniform(0,1,10000).reshape(10000,1)
-    xdata2 = np.random.uniform(0,1,10000).reshape(10000,1)
-    ydata2 = np.random.uniform(0,1,10000).reshape(10000,1)
-
-    retval = generators.correlation_histogram_generator(xdata1, ydata1, xdata2, ydata2)
-
-    for ret in retval:
-        chi2 = chi_square_distance(**ret)
-        print(chi2)
-
