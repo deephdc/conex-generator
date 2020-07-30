@@ -1,3 +1,9 @@
+"""Plot channels of one longitudinal profile with real data uncertainty bounds.
+
+Example: python3 plot_uncertainty_bounds.py 100 200 \
+         models/gan/run03/01
+"""
+
 import argparse
 
 parser = argparse.ArgumentParser()

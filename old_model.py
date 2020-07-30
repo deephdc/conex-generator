@@ -1,3 +1,5 @@
+"""General script to train the old TensorFlow 1 model in /src/models/old"""
+
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 

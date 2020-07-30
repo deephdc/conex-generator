@@ -1,3 +1,5 @@
+"""General script to train the new TensorFlow 2 models in src/models"""
+
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 

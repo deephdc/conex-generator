@@ -1,3 +1,10 @@
+"""Fit a 4 parameter Gaisser Hillas function to generated and real data.
+
+Example: python3 fit_gaisser_hillas.py 1e8 1e10 35 70 \
+         models/gan/run03/01
+"""
+
+
 import argparse
 
 parser = argparse.ArgumentParser()

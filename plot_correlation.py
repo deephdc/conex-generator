@@ -1,3 +1,9 @@
+"""Plot correlation histograms for all combinations of Nmax + Xmax.
+
+Example: python3 plot_correlation.py 30 \
+         models/gan/run03/01/gaisser_hillas_ecut_1.00e+08_1.00e+10_tcut_3.50e+01_7.00e+01_fit-error_True
+"""
+
 import argparse
 
 parser = argparse.ArgumentParser()

@@ -1,3 +1,8 @@
+"""Create simulation data with CONEX/CORSIKA and store it in data/raw
+
+Example: python3 make_data.py 100 200 12 testrun
+"""
+
 import argparse
 
 parser = argparse.ArgumentParser()

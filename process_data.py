@@ -1,3 +1,8 @@
+"""Process data/raw to data/processed (json -> numpy).
+
+Example: python3 process_data.py testrun
+"""
+
 import argparse
 
 parser = argparse.ArgumentParser()
