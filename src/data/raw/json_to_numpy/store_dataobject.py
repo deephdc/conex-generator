@@ -10,6 +10,25 @@ interimpath = get_path()
 
 
 def store_dataobject(dataobject, overwrite=False):
+    """Save dataobject to numpy files and metadata file.
+
+    This functions intends to write the (converted) contents of a json file
+    to their corresponding numpy and metadata file format in data/interim.
+    The following files will be created:
+        particle_distribution_timestamp.py
+        energy_deposit_timestamp.py
+        label_timestamp.py
+        metadata_timestamp.json
+
+    Parameters
+    ----------
+    dataobject : dict
+        Dictionary that contains all json file information. (See also
+        src.data.raw.json_to_numpy.create_dataobject)
+    overwrite : bool, optional
+        Flag to indicate if files in data/interim should be overwritten.
+        Raises exception if overwrite fails.
+    """
     json_file : str = dataobject["json_file"]
     run : str = dataobject["run"]
     timestamp = json_file.split("conex_data_")[-1].split(".json")[0]

@@ -22,6 +22,25 @@ numpy_label_layout = config["numpy_label_layout"]
 
 
 def create_dataobject(filename, run, expand_depth):
+    """Create a dictionary from a json file and convert data to numpy.
+    
+    Parameters
+    ----------
+    filename : str
+        Filename (without path) of the json file that should be converted.
+    run : str
+        Subfolder of data/raw frow which json files should be read.
+    expand_depth : bool
+        Flag to indicate if different size longitudinal profiles (due to
+        different zeniths) should be expanded (True) to maximum size with
+        additional nan values or if all profiles should be cut (False) to
+        minimum size.
+
+    Returns
+    -------
+    dataobject : dict
+        Dictionary with metadata and converted data in numpy format.
+    """
     # read json data
     filepath = os.path.join(rawpath, run, filename)
     with open(filepath, "r") as fd:
