@@ -10,6 +10,14 @@ curpath = get_path()
 
 
 def clear_run(run):
+    """Remove all derived data files from data/processed.
+
+    Parameters
+    ----------
+    run : str
+        Name of the subfolder in data/processed.
+        Accepts glob expressions.
+    """
     rmpath_glob = os.path.join(curpath, run)
     rmpaths = glob.glob(rmpath_glob)
     for path in rmpaths:
