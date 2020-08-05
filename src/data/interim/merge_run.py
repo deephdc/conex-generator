@@ -14,6 +14,30 @@ processedpath = get_processed_path()
 
 
 def merge_run(run, expand_depth, overwrite=False):
+    """Merge the contents of data/interim/run into a single dataset.
+
+    Takes the seperately converted numpy and metadata files and merges them
+    into a single file in data/processed, taking care of longitudinal profile
+    size (expand_depth), i.e. all particle_distribution_timestamp.npy files
+    will be merged into particle_distribution.npy. The subfolder path in
+    data/processed will be appended with "_merge". src.data.clear_run will
+    not take care of merge subfolders. They have to be deleted manually if
+    necessary. The current data pipeline operates better with align_run than
+    with merge_run.
+
+    Parameters
+    ----------
+    run : str
+        Subfolder of data/interim for which the merge should be done.
+    expand_depth : bool
+        Flag to indicate if different size longitudinal profiles (due to
+        different zeniths) should be expanded (True) to maximum size with
+        additional nan values or if all profiles should be cut (False) to
+        minimum size. This happens for the whole dataset.
+    overwrite : bool, optional
+        Flag to indicate if already processed files should be overwritten.
+        Raises exception if files cannot be overwritten. Defaults to False.
+    """
     outpath = os.path.join(processedpath, run + "_merge")
     try:
         os.mkdir(outpath)
@@ -90,6 +114,31 @@ def merge_run(run, expand_depth, overwrite=False):
 
 
 def merge_data(metadata, feature, depthlen, runpath):
+    """Merge the different numpy files depending on the indicated feature.
+
+    This function reads the numpy files in data/interim and merges them
+    accordingly.
+
+    Parameters
+    ----------
+    metadata : list
+        List of dictionaries which contain the contents of
+        metadata_timestamp.json.
+    feature : str
+        Data feature that should be merged. Can be "particle_distribution" or
+        "energy_deposit".
+    depthlen : int
+        Longitudinal profile size in number of depth bins that should be used
+        for the merged files.
+    runpath:
+        Full subfolder path in data/interim on which merging is operated.
+
+    Returns
+    -------
+    data : np.ndarray
+        Numpy array that contains all data of the given feature type. Data
+        might be cut down or padded with nan values depending on depthlen.
+    """
     log.info("merging numpy files for %s", feature)
 
     # get numdata
@@ -114,6 +163,24 @@ def merge_data(metadata, feature, depthlen, runpath):
 
 
 def merge_label(metadata, runpath):
+    """Merge the different label numpy files.
+
+    This function reads the label numpy files in data/interim and merges them
+    accordingly.
+
+    Parameters
+    ----------
+    metadata : list
+        List of dictionaries which contain the contents of
+        metadata_timestamp.json.
+    runpath:
+        Full subfolder path in data/interim on which merging is operated.
+
+    Returns
+    -------
+    data : np.ndarray
+        Numpy array that contains all labels.
+    """
     log.info("merging numpy files for label")
 
     # get numdata
@@ -137,6 +204,25 @@ def merge_label(metadata, runpath):
 
 
 def merge_cutbin(metadata, runpath):
+    """Merge the different cutbin numpy files.
+
+    This function reads the cutbin numpy files in data/interim and merges them
+    accordingly.
+
+    Parameters
+    ----------
+    metadata : list
+        List of dictionaries which contain the contents of
+        metadata_timestamp.json.
+    runpath:
+        Full subfolder path in data/interim on which merging is operated.
+
+    Returns
+    -------
+    data : (np.ndarray, np.ndarray)
+        Tuple of numpy arrays that contains particle distribution and energy
+        deposit cutbin data (in that order).
+    """
     log.info("merging numpy files for cutbin")
 
     # get numdata
@@ -174,6 +260,24 @@ def merge_cutbin(metadata, runpath):
 
 
 def create_metadata(metadata, run, expand_depth):
+    """Merge the different metadata json files.
+
+    This function reads the metadata json files in data/interim and merges them
+    accordingly.
+
+    Parameters
+    ----------
+    metadata : list
+        List of dictionaries which contain the contents of
+        metadata_timestamp.json.
+    runpath:
+        Full subfolder path in data/interim on which merging is operated.
+
+    Returns
+    -------
+    meta : dict
+        New (merged) metadata dictionary.
+    """
     log.info("creating metadata")
 
     jsonfiles = []
@@ -226,6 +330,40 @@ def create_metadata(metadata, run, expand_depth):
 
 
 def get_depth_features(metadata, expand_depth):
+    """Handle expand_depth length calculation.
+
+    This functions creates information (min, max) on the longitudinal profile
+    lengths for handling the expand_depth flag (see also merge_run).
+
+    Parameters
+    ----------
+    metadata : list
+        List of dictionaries which contain the contents of
+        metadata_timestamp.json.
+    expand_depth : bool
+        Flag to indicate if different size longitudinal profiles (due to
+        different zeniths) should be expanded (True) to maximum size with
+        additional nan values or if all profiles should be cut (False) to
+        minimum size.
+
+    Returns
+    -------
+    depthfeatures : dict
+        Dictionary containing information about longitudinal profile size
+        of all files in the dataset.
+        Layout:
+        {
+            "particle_distribution": {
+                "len": length in depthbins of the final data product,
+                "min": minimum depthbin of the final data product,
+                "max": maximum depthbin of the final data product
+            },
+            "energy_deposit": {
+                #see "particle_distribution"
+                ...
+            }
+        }
+    """
     temp = np.zeros((2, 3, len(metadata)), dtype=np.int)
     for ii, value in enumerate(metadata):
         temp[0,0,ii] = len(value["particle_distribution"]["depth"])
