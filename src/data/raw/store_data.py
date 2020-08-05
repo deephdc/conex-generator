@@ -8,6 +8,14 @@ log = src.utils.getLogger(__name__)
 
 
 def store_data(dataobject, run):
+    """Save dataobject into json file.
+
+    Parameters
+    ----------
+    dataobject: dict
+        Dictionary that has been created from reading CORSIKA long file.
+        (See also src.steering.corsika.long_file.make_dataobject)
+    """
     raw_path = get_path()
     runpath = os.path.join(raw_path, run)
     if not os.path.isdir(runpath):

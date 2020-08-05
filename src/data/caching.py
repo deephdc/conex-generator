@@ -23,6 +23,11 @@ def prepare_cache(name, basepath="/home/tmp/koepke/cache", reuse=True):
     reuse: bool, optional
         Flag to indicate if an already present cache should be reused. If not
         the old cache will be deleted. Defaults to True (do reuse cache).
+
+    Returns
+    -------
+    path : str
+        Full path to the cache file.
     """
     if not os.path.exists(basepath):
         log.info("creating cache folder at: %s", basepath)
@@ -63,6 +68,11 @@ def cache_dataset(dataset, name, basepath="/home/tmp/koepke/cache",
         the dataset is iterated upon. This flag ensures that the whole dataset
         cache will be created immediatly. Defaults to True. Without any good
         reason this should never be changed.
+
+    Returns
+    -------
+    dataset : tf.data.Dataset
+        TensorFlow dataset that reads from the filesystem cache.
     """
     path = prepare_cache(name, basepath=basepath, reuse=reuse)
     files = glob.glob(path + "*")

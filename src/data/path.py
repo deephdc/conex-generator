@@ -4,7 +4,12 @@ import src.utils
 datapath = os.path.join(src.utils.get_root_path(), "data")
 
 def get_path():
-    """Return data path, i.e. repobase/data."""
+    """Return data path, i.e. repobase/data.
+    
+    Returns
+    -------
+    datapath : str
+    """
     return datapath
 
 def set_path(path):
