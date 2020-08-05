@@ -1,3 +1,5 @@
+"""Main package for the CONEX neural network generator"""
+
 from . import utils
 from .utils.path import get_src_path as get_path
 

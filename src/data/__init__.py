@@ -1,3 +1,5 @@
+"""Package that handles all data processing."""
+
 from .path import get_path, set_path
 from .clear_run import clear_run
 from .config import numpy_config
