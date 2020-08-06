@@ -76,10 +76,10 @@ class GradientPenalty(tf.keras.Model):
 
             lipschitz_dynamic = tf.sqrt(dims0 + dims1)
 
-            gradient_penalty_batch = tf.square(gradnorm - lipschitz_dynamic)
+            gradient_penalty_batch = tf.abs(gradnorm - lipschitz_dynamic)
         else:
             # use fixed lipschitz constant
-            gradient_penalty_batch = tf.square(gradnorm - self.lipschitz_constant)
+            gradient_penalty_batch = tf.abs(gradnorm - self.lipschitz_constant)
 
         # calculate gradient penalty
         gradient_penalty = tf.math.reduce_mean(gradient_penalty_batch, axis=0)
