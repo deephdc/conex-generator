@@ -22,6 +22,7 @@ scipy
 pandas
 pyarrow
 h5py
+POT
 matplotlib
 jupyter
 lazy_import
