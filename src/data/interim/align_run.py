@@ -18,6 +18,27 @@ from .merge_run import create_metadata
 
 
 def align_run(run, expand_depth, overwrite=False):
+    """Align the contents of data/interim/run into a single dataset.
+
+    Takes the seperately converted numpy and metadata files and aligns them.
+    This means that every file will be fixed to the same longitudinal profile
+    length, depending on expand_depth. Subfolder storage path is in
+    data/processed.
+
+    Parameters
+    ----------
+    run : str
+        Subfolder of data/interim for which the align should be done.
+    expand_depth : bool
+        Flag to indicate if different size longitudinal profiles (due to
+        different zeniths) should be expanded (True) to maximum size with
+        additional nan values or if all profiles should be cut (False) to
+        minimum size. This happens for the whole dataset but on a file by
+        file basis.
+    overwrite : bool, optional
+        Flag to indicate if already processed files should be overwritten.
+        Raises exception if files cannot be overwritten. Defaults to False.
+    """
     outpath = os.path.join(processedpath, run)
     try:
         os.mkdir(outpath)
@@ -90,6 +111,31 @@ def align_run(run, expand_depth, overwrite=False):
 
 
 def expand_data(meta, feature, depthlen, runpath):
+    """Expand the different numpy files depending on the indicated feature.
+
+    This function reads the numpy files in data/interim and expands them
+    accordingly to the indicated depthlen.
+
+    Parameters
+    ----------
+    meta : dict
+        Dictionaries which contain the contents of a metadata_timestamp.json.
+    feature : str
+        Data feature that should be merged. Can be "particle_distribution" or
+        "energy_deposit".
+    depthlen : int
+        Longitudinal profile size in number of depth bins that should be used
+        for the aligned files.
+    runpath : str
+        Full subfolder path in data/interim on which align is operated.
+
+    Returns
+    -------
+    data : np.ndarray
+        Numpy array that contains data of the given feature type from a single
+        file. Data might be cut down or padded with nan values depending on
+        depthlen.
+    """
     numdata = meta["length"]
     numchannel = meta[feature]["number_of_features"]
 
@@ -110,6 +156,20 @@ def expand_data(meta, feature, depthlen, runpath):
 
 
 def copy_label(meta, runpath, outpath):
+    """Copy a label file from data/interim to data/processed.
+
+    Because the align operation does not change or merge label files, they can
+    be simply copied to data/processed.
+
+    Parameters
+    ----------
+    meta : dict
+        Dictionaries which contain the contents of a metadata_timestamp.json.
+    runpath : str
+        Full subfolder path in data/interim on which align is operated.
+    outpath : str
+        Full subfolder path in data/processed on which align is operated.
+    """
     jsonfile = meta["json_file"]
     timestamp = jsonfile.split("_")[-1].split(".json")[0]
     filepath = os.path.join(runpath, "label" + "_" + timestamp + ".npy")
@@ -118,6 +178,20 @@ def copy_label(meta, runpath, outpath):
 
 
 def copy_cutbin(meta, runpath, outpath):
+    """Copy a cutbin file from data/interim to data/processed.
+
+    Because the align operation does not change or merge cutbin files, they can
+    be simply copied to data/processed.
+
+    Parameters
+    ----------
+    meta : dict
+        Dictionaries which contain the contents of a metadata_timestamp.json.
+    runpath : str
+        Full subfolder path in data/interim on which align is operated.
+    outpath : str
+        Full subfolder path in data/processed on which align is operated.
+    """
     jsonfile = meta["json_file"]
     timestamp = jsonfile.split("_")[-1].split(".json")[0]
 
