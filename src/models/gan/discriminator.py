@@ -23,26 +23,26 @@ class BaseDiscriminator(tf.keras.Model):
                 discol.DenseDiscriminator(
                     self._numparticle, expscale=False),
 
-                discol.DenseDiscriminator(
-                    self._numparticle, expscale=True),
+                #discol.DenseDiscriminator(
+                #    self._numparticle, expscale=True),
 
                 discol.OldReducedDiscriminator(
                     self._numparticle, expscale=False),
 
-                discol.OldReducedDiscriminator(
-                    self._numparticle, expscale=True),
+                #discol.OldReducedDiscriminator(
+                #    self._numparticle, expscale=True),
 
                 discol.DenseDiscriminatorNorm(
                     self._numparticle, expscale=False),
 
-                discol.DenseDiscriminatorNorm(
-                    self._numparticle, expscale=True),
+                #discol.DenseDiscriminatorNorm(
+                #    self._numparticle, expscale=True),
 
                 discol.OldReducedDiscriminatorNorm(
                     self._numparticle, expscale=False),
 
-                discol.OldReducedDiscriminatorNorm(
-                    self._numparticle, expscale=True),
+                #discol.OldReducedDiscriminatorNorm(
+                #    self._numparticle, expscale=True),
         ]
 
         self.num_model = len(self.models)
