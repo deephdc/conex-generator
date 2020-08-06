@@ -130,7 +130,7 @@ def merge_data(metadata, feature, depthlen, runpath):
     depthlen : int
         Longitudinal profile size in number of depth bins that should be used
         for the merged files.
-    runpath:
+    runpath : str
         Full subfolder path in data/interim on which merging is operated.
 
     Returns
@@ -173,7 +173,7 @@ def merge_label(metadata, runpath):
     metadata : list
         List of dictionaries which contain the contents of
         metadata_timestamp.json.
-    runpath:
+    runpath : str
         Full subfolder path in data/interim on which merging is operated.
 
     Returns
@@ -214,7 +214,7 @@ def merge_cutbin(metadata, runpath):
     metadata : list
         List of dictionaries which contain the contents of
         metadata_timestamp.json.
-    runpath:
+    runpath : str
         Full subfolder path in data/interim on which merging is operated.
 
     Returns
@@ -270,7 +270,7 @@ def create_metadata(metadata, run, expand_depth):
     metadata : list
         List of dictionaries which contain the contents of
         metadata_timestamp.json.
-    runpath:
+    runpath : str
         Full subfolder path in data/interim on which merging is operated.
 
     Returns
