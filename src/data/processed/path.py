@@ -3,7 +3,7 @@ import os
 from .. import get_path as get_parent_path
 
 def get_path():
-    """Return data processed path, i.e. repobase/data/raw.
+    """Return data processed path, i.e. repobase/data/processed.
     
     Returns
     -------
