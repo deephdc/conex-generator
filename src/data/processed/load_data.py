@@ -12,6 +12,37 @@ curpath = get_path()
 
 
 def load_data(run, memorymap=True, batchread=-5):
+    """Load a given subfolder in data/processed as tf.data.Dataset.
+
+    Parameters
+    ----------
+    run : str
+        Subfolder name in data/processed from which the dataset should be
+        generated.
+    memorymap : bool
+        Flag to indicate if the data should be memory mapped from
+        filesystem (True) or not (False). Defaults to True.
+    batchread : int
+        Integer to define the size and mode of reading batches. This is only
+        for internal speed considerations. The returned dataset will always
+        be in unbatched form.
+            = 0 --> don't read batches and return single data lines
+            < 0 --> batchsize = np.ceil(length / -batchread)
+            > 0 --> batchsize = batchread
+        Defaults to -5 (1 file = 5 batches).
+
+    Returns
+    -------
+    datasets : tuple
+        Tuple of datasets in this order:
+            particle distribution -> tf.data.Dataset
+            energy deposit -> tf.data.Dataset
+            label -> tf.data.Dataset
+            metadata -> dict
+        All tf.data.Dataset instances are unbatched and properly aligned.
+        The data type depends on the stored numpy files (which is np.float
+        by default, i.e. 64 bit floating point on current cpus).
+    """
     runpath = os.path.join(curpath, run)
     check_files(runpath)
 
@@ -48,6 +79,19 @@ def load_data(run, memorymap=True, batchread=-5):
 
 
 def check_files(runpath):
+    """Execute checks on the files in data/processed.
+
+    This function will first check for the existance of runpath and then check
+    if there are the same numer of particle distribution, energy deposit and
+    label files. It also checks if metadata.json is present. If one of the
+    checks fails an exception is raised.
+    
+    Parameters
+    ----------
+    runpath : str
+        Full path to the subfolder in data/processed.
+
+    """
     rundir = os.path.split(runpath)[-1]
     if not os.path.isdir(runpath):
         msg = f"rundir \"{rundir}\" does not exist"
@@ -83,6 +127,29 @@ def check_files(runpath):
 
 
 def load_dataset(filepath, memorymap, batchread):
+    """Load a single file in data/processed as tf.data.Dataset.
+
+    Parameters
+    ----------
+    filepath : str
+        Full path to the file which should be loaded.
+    memorymap : bool
+        Flag to indicate if the numpy file should be memory mapped from the
+        filesystem.
+    batchread : int
+        Integer to define the size and mode of reading batches. This is only
+        for internal speed considerations. The returned dataset will always
+        be in unbatched form.
+            = 0 --> don't read batches and return single data lines
+            < 0 --> batchsize = np.ceil(length / -batchread)
+            > 0 --> batchsize = batchread
+        Defaults to -5 (1 file = 5 batches).
+
+    Returns
+    -------
+    ds : tf.data.Dataset
+        TensorFlow dataset.
+    """
     if memorymap:
         array = np.load(filepath, mmap_mode="c", fix_imports=False)
         if batchread == 0:
@@ -106,16 +173,65 @@ def load_dataset(filepath, memorymap, batchread):
 
 
 def make_data_generator(filepath, batchread):
+    """Return generator that serves data batches.
+    
+    Parameters
+    ----------
+    filepath : str
+        Full path to the file which should be loaded.
+    batchread : int
+        Integer to define the size and mode of reading batches. This is only
+        for internal speed considerations.
+            = 0 --> don't read batches and return single data lines
+            < 0 --> batchsize = np.ceil(length / -batchread)
+            > 0 --> batchsize = batchread
+        Defaults to -5 (1 file = 5 batches).
+
+    Returns
+    -------
+    generator
+        Either a single line or batch generator depending on the value of
+        batchread.
+    """
     if batchread == 0:
         return line_generator(filepath)
     else:
         return batch_generator(filepath, batchread)
 
 def line_generator(filepath):
+    """Return single line generator.
+
+    Parameters
+    ----------
+    filepath : str
+        Full path to the file which should be loaded.
+
+    Returns
+    -------
+    generator
+        Single line generator that serves slices of a numpy file.
+    """
     array = np.load(filepath, mmap_mode="c", fix_imports=False)
     return (data for data in array)
 
 def batch_generator(filepath, batchread):
+    """Return batch generator.
+
+    Parameters
+    ----------
+    filepath : str
+        Full path to the file which should be loaded.
+    batchread : int
+        Integer to define the size and mode of reading batches.
+            < 0 --> batchsize = np.ceil(length / -batchread)
+            > 0 --> batchsize = batchread
+        Defaults to -5 (1 file = 5 batches). Should NOT be 0!
+
+    Returns
+    -------
+    generator
+        Batch generator that serves slices of a numpy file.
+    """
     array = np.load(filepath, mmap_mode="c", fix_imports=False)
     length = array.shape[0]
     if batchread < 0:
@@ -126,6 +242,18 @@ def batch_generator(filepath, batchread):
 
 
 def concatenate_datasets(datasets):
+    """Concatenate a list of tf.data.Dataset.
+
+    Parameters
+    ----------
+    datasets : list
+        List of tf.data.Dataset
+
+    Returns
+    -------
+    ds : tf.data.Dataset
+        Concatenated TensorFlow dataset.
+    """
     ds = datasets[0]
     for ii in range(len(datasets)-1):
         ds = ds.concatenate(datasets[ii+1])
