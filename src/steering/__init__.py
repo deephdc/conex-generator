@@ -1,3 +1,5 @@
+"""Package that handles steering of external programs such as CORSIKA."""
+
 from .path import get_install_path, set_install_path
 
 import os
