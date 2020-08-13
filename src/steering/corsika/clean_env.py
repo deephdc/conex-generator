@@ -8,6 +8,7 @@ log = src.utils.getLogger(__name__)
 
 
 def clean_env():
+    """Remove all steering and output files in install/corsika-*/run."""
     runpath = get_run_path()
     log.info(f"cleaning corsika run environment at {runpath}")
 

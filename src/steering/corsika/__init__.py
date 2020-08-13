@@ -1,3 +1,5 @@
+"""Package that handles the steering of CORSIKA."""
+
 from .path import get_path, get_run_path, get_binary, set_version, set_binary
 from .config import get_particle_list, get_steering_options
 from .steering_file import write_steering_file

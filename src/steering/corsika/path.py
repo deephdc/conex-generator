@@ -17,12 +17,37 @@ except:
     log.warning("cannot find any corsika version")
 
 def get_path():
+    """Return CORSIKA base install path.
+
+    Returns
+    -------
+    path : str
+        Path to the CORSIKA install directory (e.g. /.../install/corsika-*)
+    """
     return corsika_path
 
 def get_run_path():
+    """Return CORSIKA run directory path.
+
+    Returns
+    -------
+    path : str
+        Path to the CORSIKA run directory (e.g. /.../install/corsika-*/run)
+    """
     return os.path.join(get_path(), "run")
 
 def set_version(version):
+    """Set CORSIKA version.
+
+    If there are several CORSIKA versions inside /.../install, this function
+    sets the currently used one. By default the latest version is used. Also
+    performs checks if the version is installed.
+
+    Paramters
+    ---------
+    version : str
+        Version string such that /.../install/corsika-version is a valid path.
+    """
     global corsika_path
     newpath = os.path.join(get_install_path(), "corsika-" + version)
     if os.path.isdir(newpath):
@@ -47,10 +72,34 @@ except:
     log.warning("cannot find any corsika binary")
 
 def get_binary():
+    """Return CORSIKA binary path.
+
+    Returns
+    -------
+    path : str
+        Path to the CORSIKA binary inside /.../install/corsika-*/run.
+    """
     runpath = get_run_path()
     return os.path.join(runpath, corsika_filename)
 
 def set_binary(binary):
+    """Set the CORSIKA binary.
+
+    Because CORSIKA can be compiled with different options, this function
+    enables the selection of a specific binary inside the run directory. One
+    can either give a full path, full name or part of the binary name.
+    Glob autocompletion is used to identify a binary. If there is more than
+    one possible candidate, the last one in a sorted list is used (i.e. the
+    alphanumerical last one). Checks are done if a given binary exists.
+
+    Parameters
+    ----------
+    binary : str
+        Either
+            1) Full path to the binary
+            2) Full name of the binary
+            3) Part of the name where globbing is done on corsika*Linux-*part*
+    """
     global corsika_filename
     binary = os.path.split(binary)[-1]
 

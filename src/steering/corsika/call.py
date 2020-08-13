@@ -29,7 +29,50 @@ def call(
         nshower = 1,
         run = None,
         clean = False):
+    """Run CORSIKA with a given set of inputs and return longitudinal data.
 
+    This function calls CORSIKA with a given default steering file called
+    "conex.default" (in src/steering/coriska). It replaces the parts about
+    particle type, energy, zenith, azimuth and observation level before it
+    does so.
+
+    Parameters
+    ----------
+    particle : str
+        Particle type as string representation. Currently supports
+            "gamma" (CORSIKA 1)
+            "electron" (CORSIKA 3)
+            "proton" (CORSIKA 14)
+            "helium" (CORSIKA 402)
+            "oxygen" (CORSIKA 1608)
+            "iron" (CORSIKA 5626)
+    energy : float
+        Incident energy in GeV.
+    theta : float
+        Zenith angle in degree. Range: [0, 90].
+    phi : float
+        Azimuth angle in degree. Range: [-180, 180].
+    obslevel : float, optional
+        Observation level for CORSIKA in cm. Should usually be greater than
+        zero, however some atmospheres allow -10^5 cm as a minimum.
+        Defaults to 0.0.
+    nshower : int, optinal
+        Batch size for the CORSIKA run, i.e. how many profiles will be
+        generated. Defaults to 1.
+    run : int, optional
+        Internal CORSIKA run number that fixes the numeric suffix of output
+        files. Defaults to None, which will use the next free number.
+    clean : bool, optional
+        Flag to indicate if the output file and steering file should be
+        removed after a successful execution. Defaults to False.
+
+    Returns
+    -------
+    (pd_list, ed_list) : tuple
+        Contents of the longitudinal file stored as a numpy array. pd_list
+        is the particle_distribution and ed_list is the energy_deposit. Both
+        layouts are (batch, channel, depth).
+    """
     runpath = get_run_path()
     coriska_path = get_binary()
     coriska_file = os.path.split(coriska_path)[-1]
@@ -80,7 +123,118 @@ def get_data(
         nshower = 1,
         run = None,
         clean = False):
+    """Run CORSIKA with a given set of inputs and return a dataobject.
 
+    This function calls CORSIKA with a given default steering file called
+    "conex.default" (in src/steering/coriska). It replaces the parts about
+    particle type, energy, zenith, azimuth and observation level before it
+    does so. The return type also contains metadata information (besides the
+    longitudinal profile).
+
+    Parameters
+    ----------
+    particle : str
+        Particle type as string representation. Currently supports
+            "gamma" (CORSIKA 1)
+            "electron" (CORSIKA 3)
+            "proton" (CORSIKA 14)
+            "helium" (CORSIKA 402)
+            "oxygen" (CORSIKA 1608)
+            "iron" (CORSIKA 5626)
+    energy : float
+        Incident energy in GeV.
+    theta : float
+        Zenith angle in degree. Range: [0, 90].
+    phi : float
+        Azimuth angle in degree. Range: [-180, 180].
+    obslevel : float, optional
+        Observation level for CORSIKA in cm. Should usually be greater than
+        zero, however some atmospheres allow -10^5 cm as a minimum.
+        Defaults to 0.0.
+    nshower : int, optional
+        Batch size for the CORSIKA run, i.e. how many profiles will be
+        generated. Defaults to 1.
+    run : int, optional
+        Internal CORSIKA run number that fixes the numeric suffix of output
+        files. Defaults to None, which will use the next free number.
+    clean : bool, optional
+        Flag to indicate if the output file and steering file should be
+        removed after a successful execution. Defaults to False.
+
+    Returns
+    -------
+    dataobject : dict
+        A dataobject that contains the longitudinal particle distrubtion,
+        energy deposit and metadata. The last two depth bins are stored in
+        "cutbin" because CORSIKA treats them in a special way and they are
+        not part of an ordinary profile shape.
+        
+        The exact format is (see also src.steering.corsika.make_dataobject):
+
+        {
+            str(uuid.uuid4()): {
+                "particle": particle,
+                "energy": energy,
+                "theta": theta,
+                "phi": phi,
+                "obslevel": obslevel,
+
+                "particle_distribution": {
+                    "depth":
+                    "gamma":
+                    "positron":
+                    "electron":
+                    "mup":
+                    "mum":
+                    "hadron":
+                    "charged":
+                    "nuclei":
+                    "cherenkov":
+                },
+                "energy_deposit": {
+                    "depth":
+                    "gamma":
+                    "em_ioniz":
+                    "em_cut":
+                    "mu_ioniz":
+                    "mu_cut":
+                    "ha_ioniz":
+                    "ha_cut":
+                    "neutrino":
+                    "sum":
+                },
+                
+                "cutbin": {
+                    "particle_distribution": {
+                        "depth":
+                        "gamma":
+                        "positron":
+                        "electron":
+                        "mup":
+                        "mum":
+                        "hadron":
+                        "charged":
+                        "nuclei":
+                        "cherenkov":
+                    },
+                    "energy_deposit": {
+                        "depth":
+                        "gamma":
+                        "em_ioniz":
+                        "em_cut":
+                        "mu_ioniz":
+                        "mu_cut":
+                        "ha_ioniz":
+                        "ha_cut":
+                        "neutrino":
+                        "sum":
+                    },
+                },
+            },
+
+            # ... for each shower in a batch
+        }
+    """
     pd_list, ed_list = call(particle,
                             energy,
                             theta,
@@ -111,7 +265,124 @@ def get_data_distributed(
         startrun = None,
         clean = False,
         nthreads = 4):
-    
+    """Run many CORSIKA instances in parallel and return a dataobject.
+
+    This function calls CORSIKA in parallel with a given default steering file
+    called "conex.default" (in src/steering/coriska). It replaces the parts
+    about particle type, energy, zenith, azimuth and observation level before
+    it does so. The number of calls to CORSIKA is determined by the length of
+    the input lists. The return type also contains metadata information
+    (besides the longitudinal profile).
+
+    Parameters
+    ----------
+    particle : list(str)
+        List of particle types as string representation. Currently supports
+            "gamma" (CORSIKA 1)
+            "electron" (CORSIKA 3)
+            "proton" (CORSIKA 14)
+            "helium" (CORSIKA 402)
+            "oxygen" (CORSIKA 1608)
+            "iron" (CORSIKA 5626)
+    energy : list(float)
+        List of incident energies in GeV.
+    theta : list(float)
+        List of zenith angles in degree. Range: [0, 90].
+    phi : list(float)
+        List of azimuth angles in degree. Range: [-180, 180].
+    obslevel : list(float)
+        List of observation levels for CORSIKA in cm. Should usually be greater
+        than zero, however some atmospheres allow -10^5 cm as a minimum.
+    nshower : list(int)
+        list of batch sizes for the CORSIKA runs, i.e. how many profiles will
+        be generated in each run.
+    startrun : int, optional
+        Internal CORSIKA run number that fixes the numeric suffix of output
+        files. Every single run will have an incremented run number starting
+        with this parameter.
+        Defaults to None, which will use the next free number.
+    clean : bool, optional
+        Flag to indicate if the output files and steering files should be
+        removed after the full successful execution of all runs.
+        Defaults to False.
+    nthreads : int, optional
+        How many instances of CORSIKA should be run in parallel to work
+        through the lists of inputs. Defaults to 4.
+
+    Returns
+    -------
+    dataobject : dict
+        A dataobject that contains the longitudinal particle distrubtion,
+        energy deposit and metadata. The last two depth bins are stored in
+        "cutbin" because CORSIKA treats them in a special way and they are
+        not part of an ordinary profile shape.
+        
+        The exact format is (see also src.steering.corsika.make_dataobject):
+
+        {
+            str(uuid.uuid4()): {
+                "particle": particle,
+                "energy": energy,
+                "theta": theta,
+                "phi": phi,
+                "obslevel": obslevel,
+
+                "particle_distribution": {
+                    "depth":
+                    "gamma":
+                    "positron":
+                    "electron":
+                    "mup":
+                    "mum":
+                    "hadron":
+                    "charged":
+                    "nuclei":
+                    "cherenkov":
+                },
+                "energy_deposit": {
+                    "depth":
+                    "gamma":
+                    "em_ioniz":
+                    "em_cut":
+                    "mu_ioniz":
+                    "mu_cut":
+                    "ha_ioniz":
+                    "ha_cut":
+                    "neutrino":
+                    "sum":
+                },
+                
+                "cutbin": {
+                    "particle_distribution": {
+                        "depth":
+                        "gamma":
+                        "positron":
+                        "electron":
+                        "mup":
+                        "mum":
+                        "hadron":
+                        "charged":
+                        "nuclei":
+                        "cherenkov":
+                    },
+                    "energy_deposit": {
+                        "depth":
+                        "gamma":
+                        "em_ioniz":
+                        "em_cut":
+                        "mu_ioniz":
+                        "mu_cut":
+                        "ha_ioniz":
+                        "ha_cut":
+                        "neutrino":
+                        "sum":
+                    },
+                },
+            },
+
+            # ... for each shower in a batch and for each run
+        }
+    """
     # prepare and check args
     len_particle = len(particle)
     len_energy = len(energy)
@@ -208,6 +479,23 @@ def get_data_distributed(
 
 
 def find_run(run):
+    """Find the next free run number in install/coriska-*/run.
+
+    This function checks the run directory of the CORSIKA binary for a free
+    (internal) run number such that the output file suffix or steering file
+    prefix is not in use yet.
+
+    Parameters
+    ----------
+    run : int
+        Minimal start number for the run number search. Can be None, which
+        will indicate the use of the next available number.
+
+    Returns
+    -------
+    currun : int
+        An available run number.
+    """
     if run is not None:
         return run
     
@@ -234,6 +522,18 @@ def find_run(run):
 
 
 def distributed_worker(jobqueue : queue.Queue, dataqueue : queue.Queue):
+    """The worker function for src.steering.corsika.get_data_distributed.
+
+    This worker function implements a retry automatic, which will requeue a
+    failed CORSIKA call once.
+
+    Paramters
+    ---------
+    jobqueue : queue.Queue
+        A queue which holds the input information for CORSIKA calls.
+    dataqueue : queue.Queue
+        A queue which holds the ouput dataobjects.
+    """
     while True:
         try:
             kwargs = dict(jobqueue.get(timeout=10))

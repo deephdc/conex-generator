@@ -21,6 +21,46 @@ def write_steering_file(
         phi = 0.0,
         obslevel = 0.0,
         overwrite=False):
+    """Create a CORSIKA steering file inside install/corsika-*/run.
+
+    This function takes the default steering file called "conex.default" in
+    src/steering/corsika and changes the corresponding rows depending in the
+    input. The result is then written to run_conex.cfg inside the CORSIKA
+    install run directory.
+
+    Parameters
+    ----------
+    run : int, optional
+        Internal CORSIKA run number that fixes the numeric suffix of output
+        files. Defaults to 1.
+    nshower : int, optinal
+        Batch size for the CORSIKA run, i.e. how many profiles will be
+        generated. Defaults to 1.
+    particle : int, optional
+        Particle type as integer representation. For instance
+            1 -> gamma
+            3 -> electron
+            14 -> proton
+            402 -> helium
+            1608 -> oxygen
+            5626 -> iron
+            (see CORSIKA manual for more mappings)
+        Defaults to 14 (proton).
+    energy : float, optional
+        Incident energy in GeV. Defaults to 1 GeV.
+    theta : float, optional
+        Zenith angle in degree. Range: [0, 90]. Defaults to 0.0.
+    phi : float, optional
+        Azimuth angle in degree. Range: [-180, 180]. Defaults to 0.0.
+    obslevel : float, optional
+        Observation level for CORSIKA in cm. Should usually be greater than
+        zero, however some atmospheres allow -10^5 cm as a minimum.
+        Defaults to 0.0.
+    overwrite : bool, optional
+        Flag to indicate if an already present steering file should be
+        overwritten. Defaults to False. Raises an exception if the file cannot
+        be overwritten.
+    """
     runpath = get_run_path()
     filepath = get_steering_filepath(run)
     filename = os.path.split(filepath)[-1]
@@ -79,6 +119,16 @@ def write_steering_file(
 
 
 def remove_steering_file(run):
+    """Delete a CORSIKA steering file for a given run number.
+
+    This function takes a run number in integer format and deltes the
+    corresponding [prefix]_conex.cfg file inside install/corsika-*/run.
+
+    Paramters
+    ---------
+    run : int
+        CORSIKA steering filename prefix ([prefix]_conex.cfg) in integer format.
+    """
     runpath = get_run_path()
     filepath = get_steering_filepath(run)
     filename = os.path.split(filepath)[-1]
@@ -91,6 +141,18 @@ def remove_steering_file(run):
 
 
 def get_steering_filepath(run):
+    """Convert an integer run number to a CORSIKA steering filepath.
+    
+    Paramters
+    ---------
+    run : int
+        CORSIKA steering filename prefix ([prefix]_conex.cfg) in integer format.
+
+    Returns
+    -------
+    filepath : str
+        Full filepath to the steering file inside install/corsika-*/run.
+    """
     runpath = get_run_path()
     filepath = os.path.join(runpath, str(run) + "_conex.cfg")
     return filepath
