@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-   Module to define CONSTANTS used across the project
+   Module to define CONSTANTS used across the project for the Deep Hybrid DataCloud.
 """
 
 import os
