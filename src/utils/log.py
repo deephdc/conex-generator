@@ -24,6 +24,33 @@ logging.basicConfig(
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"
 
 def getLogger(name = None, level = None):
+    """Get a python (logging) logger.
+
+    Uses logging.getLogger internally. The returned logger is attached to a
+    file stream in repobase/log.txt, stdout and a Telegram-Bot (if possible).
+    The default format is defined in src/utils/log.py.
+
+    Paramters
+    ---------
+    name : str, optional
+        Logger name. Should be called with __name__. Defaults to None, which
+        will return the root logger.
+    level : str, optional
+        Sets the log level of the root logger (and therefore also for the
+        derived logger). Should be one of the following:
+            "critical" or "c"
+            "error" or "e"
+            "warning" or "w"
+            "info" or "i"
+            "debug" or "d"
+            "notset" or "n"
+            (case insensitive)
+        Defaults to None, which will not change the log level.
+
+    Returns
+    -------
+    logger : logging.Logger
+    """
     if level is not None:
         setLogLevel(level)
 
@@ -34,6 +61,24 @@ def getLogger(name = None, level = None):
 
 
 def setLogLevel(level : str):
+    """Set the log level of the root logger (and thus for all derived loggers).
+
+    This function also manipulates the log level of the TensorFlow c++ logger
+    via the environment variable "TF_CPP_MIN_LOG_LEVEL".
+
+    Parameters
+    ----------
+    level : str
+        Sets the log level of the root logger (and therefore also for all
+        derived loggers). Should be one of the following:
+            "critical" or "c"
+            "error" or "e"
+            "warning" or "w"
+            "info" or "i"
+            "debug" or "d"
+            "notset" or "n"
+            (case insensitive)
+    """
     level = level.lower()
     logger = logging.getLogger()
 
