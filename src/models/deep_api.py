@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Integrate a model with the DEEP API
+Integrate a model with the Deep Hybrid DataCloud API.
 """
 
 import json
