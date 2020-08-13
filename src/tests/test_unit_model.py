@@ -3,6 +3,8 @@ import unittest
 import src.models.deep_api as deep_api
 
 class TestModelMethods(unittest.TestCase):
+    """Default tests for Deep Hybrid DataCloud."""
+
     def setUp(self):
         self.meta = deep_api.get_metadata()
 
