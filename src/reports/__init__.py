@@ -1,3 +1,5 @@
+"""Package that handles derived report data products and their paths."""
+
 from .path import get_path, set_path
 
 import os
