@@ -6,9 +6,40 @@ from src.models.gan import utils
 
 
 class BaseDiscriminator(tf.keras.Model):
+    """This is the base discriminator class, which calls specific subdiscriminators.
+
+    BaseDiscriminator is a wrapper class that implements ensemble handling and
+    is responsible for calling the appropriate discriminator types. It uses the
+    tf.keras.Model interface.
+    """
 
     def __init__(self, pd_maxdata, ed_maxdata, pd_feature_list=None,
                  ed_feature_list=None, numparticle=6, **kwargs):
+        """Construct a BaseDiscriminator.
+
+        Parameters
+        ----------
+        pd_maxdata : list
+            List of normalization constants for the particle distribution
+            channels. Lenght should be 8.
+        ed_maxdata : list
+            List of normalization constants for the energy deposit
+            channels. Lenght should be 9.
+        pd_feature_list : list, optional
+            List of indices for particle distribution channels that should be
+            generated. Defaults to None, which will use [0,1,2,3,4,5,6]
+            (everything except nuclei).
+        ed_feature_list : list, optional
+            List of indices for energy deposit channels that should be
+            generated. Defaults to None, which will use [8] (nothing except
+            sum/total energy deposit).
+        numparticle : int, optional
+            Maximum number of particle types that should be generated (used
+            for onehot encoding of particle types).
+        **kwargs
+            Additional keyword arguments that are passed down to the
+            constructor of tf.keras.Model.
+        """
         super().__init__(**kwargs)
 
         self.pd_maxdata = pd_maxdata
@@ -63,10 +94,31 @@ class BaseDiscriminator(tf.keras.Model):
 
     @property
     def ensemble(self):
+        """Ensemble status as a boolean numpy array. True means enabled."""
         return self._ensemble_var.numpy()
 
     @ensemble.setter
     def ensemble(self, value):
+        """Set the ensemble status.
+
+        This setter function will raise an exception if an unsupported input
+        type is given.
+
+        Paramters
+        ---------
+        value : int, list, tuple, np.ndarray
+            Indicator value of the desired ensemble status. Handling will
+            depend on the input type.
+
+            integer:
+                == 0 -> enable the whole ensemble.
+                 > 0 -> enable this index and disable all the others.
+                 < 0 -> the absolute value is treated as a boolean bit mask.
+
+            list, tuple, np.ndarray
+                Sequence whose length should match the number of models in
+                the ensemble. Values have to be boolean. True means enabled.
+        """
         if isinstance(value, (int, np.integer)):
             if value == 0:
                 bool_list = [True for _ in range(self.num_model)]
@@ -109,6 +161,25 @@ class BaseDiscriminator(tf.keras.Model):
     
     @tf.function
     def call(self, inputs, training=False):
+        """TensorFlow model call function.
+
+        Parameters
+        ----------
+        inputs : list
+            Index 0: label, layout: (batch, features)
+            Index 1: particle distribution, layout: (batch, depth, channel)
+            Index 2: energy deposit, layout: (batch, depth, channel)
+            Index 3: particle distribution mask, layout: (batch, depth, channel)
+            Index 4: energy deposit mask, layout: (batch, depth, channel)
+        training : bool
+            Flag to indicate if the model is run in training mode or not.
+            Defaults to False.
+
+        Returns
+        -------
+        tensor : tf.Tensor
+            Scalar logit value.
+        """
         label = inputs[0]
         data = inputs[1:3]
         mask = inputs[3:]

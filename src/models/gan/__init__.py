@@ -1,3 +1,5 @@
+"""Package that implements the default GAN model."""
+
 from . import utils
 from . import generator_collection
 from . import discriminator_collection
