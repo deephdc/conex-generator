@@ -69,7 +69,7 @@ class DataMerger(tf.keras.layers.Layer):
         ----------
         inputs : list
             Index 0: particle distribution, layout: (batch, depth, channel)
-            Index 0: energy deposit, layout: (batch, depth, channel)
+            Index 1: energy deposit, layout: (batch, depth, channel)
         training : bool, optional
             Flag to indicate if the layer is run in training mode or not.
             Defaults to False.
