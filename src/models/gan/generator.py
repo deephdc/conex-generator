@@ -27,10 +27,10 @@ class BaseGenerator(tf.keras.Model):
             Lenght in depth bins of the generated data.
         pd_maxdata : list
             List of normalization constants for the particle distribution
-            channels. Lenght should be 8.
+            channels. Length should be 8.
         ed_maxdata : list
             List of normalization constants for the energy deposit
-            channels. Lenght should be 9.
+            channels. Length should be 9.
         pd_feature_list : list, optional
             List of indices for particle distribution channels that should be
             generated. Defaults to None, which will use [0,1,2,3,4,5,6]

@@ -5,8 +5,49 @@ from src.models.gan import utils
 
 
 class GradientPenalty(tf.keras.Model):
+    """Calculates the gradient penalty for a given discriminator.
+    
+    This class takes a BaseDiscriminator instance and runs all necessary steps
+    to calculate the gradient penalty for non-exponential (re-)scaled inputs.
+    The penalty is only calculated on data inputs, not on labels!
+
+    This class uses the tf.keras.Model interface.
+    """
 
     def __init__(self, discriminator, pd_maxdata=None, ed_maxdata=None, lp_dynamic=True, **kwargs):
+        """Construct the GradientPenalty for a given discriminator.
+
+        Notice: The penalty is only calculated on data inputs, not on labels!
+        
+        Parameters
+        ----------
+        discriminator : src.models.gan.BaseDiscriminator
+            A BaseDiscriminator instance for which the gradient penatly
+            should be calculated.
+        pd_maxdata : list, optional
+            List of normalization constants for the particle distribution
+            channels. Length should be 8. Defaults to None, which will try
+            to read the constants from the discriminator.
+            These constants are essential for the gradient penalty because
+            it is calculated on the "outer" discriminator, meaning that
+            normalization has to be undone in order to get reasonable
+            magnitudes.
+        ed_maxdata : list, optional
+            List of normalization constants for the energy deposit
+            channels. Length should be 9. Defaults to None, which will try
+            to read the constants from the discriminator.
+            These constants are essential for the gradient penalty because
+            it is calculated on the "outer" discriminator, meaning that
+            normalization has to be undone in order to get reasonable
+            magnitudes.
+        lp_dynamic : bool, optional
+            Flag to indicate if the lipschitz constant should be dynamically
+            adjusted for the (actual) dimensionality of the inputs (no nans)
+            or if it should be a fixed constant.
+        **kwargs
+            Additional keyword arguments that are passed down to the
+            constructor of tf.keras.Model.
+        """
         super().__init__(**kwargs)
 
         self.lp_dynamic = lp_dynamic
@@ -29,6 +70,16 @@ class GradientPenalty(tf.keras.Model):
         self.superposition_ed = utils.UniformSuperposition()
 
     def build(self, input_shape):
+        """TensorFlow model build function.
+
+        If a fixed Lipschitz constant is used, it is calculated and stored
+        here once.
+
+        Parameters
+        ----------
+        input_shape
+            See tf.keras.Model.build
+        """
         self.ndim = np.array([
             input_shape[1][1] * input_shape[1][2], # particle distribution
             input_shape[2][1] * input_shape[2][2], # energy deposit
@@ -42,6 +93,25 @@ class GradientPenalty(tf.keras.Model):
 
     @tf.function
     def call(self, inputs, training=False):
+        """TensorFlow model call function.
+
+        Parameters
+        ----------
+        inputs : list
+            Index 0: label, layout: (batch, features)
+            Index 1: real particle distribution, layout: (batch, depth, channel)
+            Index 2: real energy deposit, layout: (batch, depth, channel)
+            Index 3: fake particle distribution, layout: (batch, depth, channel)
+            Index 4: fake energy deposit, layout: (batch, depth, channel)
+        training : bool
+            Flag to indicate if the model is run in training mode or not.
+            Defaults to False.
+
+        Returns
+        -------
+        tensor : tf.Tensor
+            Scalar gradient penalty value.
+        """
         label = inputs[0]
         real = inputs[1:3]
         fake = inputs[3:]
