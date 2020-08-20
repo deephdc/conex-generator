@@ -35,13 +35,15 @@ class BaseGenerator(tf.keras.Model):
             List of indices for particle distribution channels that should be
             generated. Defaults to None, which will use [0,1,2,3,4,5,6]
             (everything except nuclei).
+            See also src/models/gan/datamerger.py for defaults.
         ed_feature_list : list, optional
             List of indices for energy deposit channels that should be
             generated. Defaults to None, which will use [8] (nothing except
             sum/total energy deposit).
+            See also src/models/gan/datamerger.py for defaults.
         numparticle : int, optional
             Maximum number of particle types that should be generated (used
-            for onehot encoding of particle types).
+            for onehot encoding of particle types). Defaults to 6.
         **kwargs
             Additional keyword arguments that are passed down to the
             constructor of tf.keras.Model.
@@ -188,7 +190,7 @@ class BaseGenerator(tf.keras.Model):
         inputs : list
             Index 0: label, layout: (batch, features)
             Index 1-end: noise vectors, layout: (type, batch, dimensions)
-        training : bool
+        training : bool, optional
             Flag to indicate if the model is run in training mode or not.
             Defaults to False.
 

@@ -103,7 +103,7 @@ class GradientPenalty(tf.keras.Model):
             Index 2: real energy deposit, layout: (batch, depth, channel)
             Index 3: fake particle distribution, layout: (batch, depth, channel)
             Index 4: fake energy deposit, layout: (batch, depth, channel)
-        training : bool
+        training : bool, optional
             Flag to indicate if the model is run in training mode or not.
             Defaults to False.
 

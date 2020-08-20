@@ -18,8 +18,34 @@ def get_default_ed_feature_list():
 
 
 class DataMerger(tf.keras.layers.Layer):
+    """DataMerger handles joining particle distribution and energy deposit data.
+
+    Because internally, all profile types are treated similarly, this class
+    handles the merging of selected particle distribution and energy deposit
+    channels.
+
+    This class implements the tf.keras.layers.Layer interface.
+    """
 
     def __init__(self, pd_feature_list=None, ed_feature_list=None, **kwargs):
+        """Construct a DataMerger instance.
+
+        Parameters
+        ----------
+        pd_feature_list : list, optional
+            List of indices for particle distribution channels that should be
+            generated. Defaults to None, which will use [0,1,2,3,4,5,6]
+            (everything except nuclei).
+            See also src/models/gan/datamerger.py for defaults.
+        ed_feature_list : list, optional
+            List of indices for energy deposit channels that should be
+            generated. Defaults to None, which will use [8] (nothing except
+            sum/total energy deposit).
+            See also src/models/gan/datamerger.py for defaults.
+        **kwargs
+            Additional keyword arguments that are passed down to the
+            constructor of tf.keras.layers.Layer.
+        """
         super().__init__(**kwargs)
 
         if pd_feature_list is None:
@@ -37,6 +63,22 @@ class DataMerger(tf.keras.layers.Layer):
 
     @tf.function
     def call(self, inputs, training=False):
+        """TensorFlow model call function.
+
+        Parameters
+        ----------
+        inputs : list
+            Index 0: particle distribution, layout: (batch, depth, channel)
+            Index 0: energy deposit, layout: (batch, depth, channel)
+        training : bool, optional
+            Flag to indicate if the layer is run in training mode or not.
+            Defaults to False.
+
+        Returns
+        -------
+        tensor : tf.Tensor
+            Merged data tensor, layout (batch, depth, net-channels)
+        """
         particle_distribution = inputs[0]
         energy_deposit = inputs[1]
 
@@ -50,8 +92,36 @@ class DataMerger(tf.keras.layers.Layer):
 
 
 class DataSplitter(tf.keras.layers.Layer):
+    """DataSplitter handles splitting particle distribution and energy deposit data.
+
+    Because internally, all profile types are treated similarly, this class
+    handles the splitting of selected particle distribution and energy deposit
+    channels. This is the reverse operation performed by DataMerger.
+    Channels that are not present internally (because they are deselected)
+    will be filled with nans.
+
+    This class implements the tf.keras.layers.Layer interface.
+    """
 
     def __init__(self, pd_feature_list=None, ed_feature_list=None, **kwargs):
+        """Construct a DataSplitter instance.
+
+        Parameters
+        ----------
+        pd_feature_list : list, optional
+            List of indices for particle distribution channels that should be
+            generated. Defaults to None, which will use [0,1,2,3,4,5,6]
+            (everything except nuclei).
+            See also src/models/gan/datamerger.py for defaults.
+        ed_feature_list : list, optional
+            List of indices for energy deposit channels that should be
+            generated. Defaults to None, which will use [8] (nothing except
+            sum/total energy deposit).
+            See also src/models/gan/datamerger.py for defaults.
+        **kwargs
+            Additional keyword arguments that are passed down to the
+            constructor of tf.keras.layers.Layer.
+        """
         super().__init__(**kwargs)
 
         if pd_feature_list is None:
@@ -72,6 +142,22 @@ class DataSplitter(tf.keras.layers.Layer):
 
     @staticmethod
     def get_gatherindex(feature_list, numfeatures):
+        """Helper function that converts a feature list into tf.gather indices.
+        
+        Parameters
+        ----------
+        feature_list : list
+            Either a particle distribution or energy deposit list of channels.
+        numfeatures : int
+            The maximum number of features (channels) in the corresponding
+            particle distribution or energy deposit data.
+
+        Returns
+        -------
+        gatherindex : int
+            A list of indices used for tf.gather, which is used to select the
+            appropriate channels.
+        """
         gatherindex = np.arange(numfeatures) + len(feature_list)
         for ii,_ in enumerate(gatherindex):
             if ii in feature_list:
@@ -79,6 +165,16 @@ class DataSplitter(tf.keras.layers.Layer):
         return gatherindex
 
     def build(self, input_shape):
+        """TensorFlow model build function.
+
+        Performs length checks and constructs a dummy data instance, which
+        is filled by nans (this dummy will be masked with selected channels).
+
+        Parameters
+        ----------
+        input_shape
+            See tf.keras.layers.Layer.build.
+        """
         self._depthlen = input_shape[1]
 
         pd_numfeatures = len(self._pd_feature_list)
@@ -96,6 +192,25 @@ class DataSplitter(tf.keras.layers.Layer):
 
     @tf.function
     def call(self, inputs, training=False):
+        """TensorFlow model call function.
+
+        Parameters
+        ----------
+        inputs : tf.Tensor
+            A tensor that combines both particle distribution and
+            energy deposit data.
+        training : bool, optional
+            Flag to indicate if the layer is run in training mode or not.
+            Defaults to False.
+
+        Returns
+        -------
+        tensor : list
+            List of data tensors, layout: (batch, depth, channels)
+            Index 0: particle distribution
+            Index 1: energy deposit
+            Channels that are not present internally are filled with nans.
+        """
         splitindex = len(self._pd_feature_list)
         pd_part = inputs[:,:,:splitindex]
         ed_part = inputs[:,:,splitindex:]
